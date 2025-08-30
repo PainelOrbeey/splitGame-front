@@ -1,0 +1,320 @@
+%card-base {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-main);
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.container-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  min-height: 100vh;
+  background: var(--bg-main);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    color: var(--text-main);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+
+  .width-max {
+    width: 100%;
+  }
+}
+
+.transactions-table {
+  @extend %card-base;
+  padding: 0;
+  overflow: hidden;
+
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+
+    thead {
+      background: var(--card-bg);
+
+      th {
+        text-align: left;
+        padding: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background: var(--bg-main);
+        }
+
+        td {
+          padding: 1rem;
+          vertical-align: middle;
+        }
+      }
+    }
+
+    .transaction-id {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--blue-500);
+      font-weight: 600;
+    }
+
+    .company-info,
+    .customer-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .name {
+        font-weight: 600;
+        color: var(--text-main);
+      }
+
+      .id,
+      .email {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .amount {
+      font-weight: 700;
+      color: var(--text-main);
+      display: block;
+    }
+
+    .fees {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    .tag {
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      display: inline-block;
+
+      &.success {
+        background: #d1fae5;
+        color: #047857;
+      }
+
+      &.warning {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      &.danger {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+
+      &.info {
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      &.secondary {
+        background: #f3f4f6;
+        color: #374151;
+      }
+    }
+
+    .payment-method,
+    .acquirer {
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    .date-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      .created {
+        font-size: 0.85rem;
+        color: var(--text-main);
+      }
+
+      .processed {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+    }
+
+    .btn-action {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: var(--blue-500);
+        color: white;
+        border-color: var(--blue-500);
+      }
+
+      i {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-main);
+
+    .page-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      color: var(--text-main);
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: var(--blue-500);
+        color: white;
+        border-color: var(--blue-500);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    .page-info {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+  }
+}
+
+.transaction-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .detail-section {
+    h4 {
+      color: var(--text-main);
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+
+      label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      span {
+        font-size: 0.9rem;
+        color: var(--text-main);
+        font-weight: 500;
+      }
+    }
+
+    p {
+      color: var(--text-main);
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .container-wrapper {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .transactions-table {
+    .user-table {
+      font-size: 0.8rem;
+
+      thead th,
+      tbody td {
+        padding: 0.75rem 0.5rem;
+      }
+    }
+  }
+
+  .transaction-details {
+    .detail-section {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}

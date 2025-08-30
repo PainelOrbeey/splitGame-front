@@ -1,0 +1,322 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Todas as Transações</h2>
+    <app-user-menu [username]="'Conan amassa vó'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Transações" [value]="fmt(metrics.totalTransactions, 'int')"
+      icon="pi pi-credit-card" [delta]="'+' + fmt(metrics.transactionGrowth, 'percent', 1, 1)" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Volume Total" [value]="fmt(metrics.totalVolume, 'currency')"
+      icon="pi pi-dollar" [delta]="'+' + fmt(metrics.volumeGrowth, 'percent', 1, 1)" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Conversão" [value]="fmt(metrics.conversionRate, 'percent', 1, 1)"
+      icon="pi pi-percentage" [delta]="'+2.1%'" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageTicket, 'currency')"
+      icon="pi pi-chart-line" [delta]="'+5.8%'" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Transações Concluídas"
+      [value]="fmt(metrics.completedTransactions, 'int')" icon="pi pi-check-circle"
+      [delta]="'+' + fmt(metrics.transactionGrowth, 'percent', 1, 1)" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total em Taxas" [value]="fmt(metrics.totalFees, 'currency')"
+      icon="pi pi-money-bill" [delta]="'+8.2%'" deltaType="up">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todas',        value: '' },
+        { label: 'Concluídas',   value: 'completed' },
+        { label: 'Pendentes',    value: 'pending' },
+        { label: 'Processando',  value: 'processing' },
+        { label: 'Falharam',     value: 'failed' }
+      ]" [selected]="filters.status" (selectedChange)="setPaidStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; onFilterChange()" searchPlaceholder="Buscar transação, empresa ou cliente…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="transactions-table">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Empresa</th>
+            <th>Cliente</th>
+            <th>Valor</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Método</th>
+            <th>Adquirente</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of paginatedTransactions">
+            <td>
+              <span class="transaction-id">{{ transaction.id }}</span>
+            </td>
+            <td>
+              <div class="company-info">
+                <span class="name">{{ transaction.companyName }}</span>
+                <small class="id">{{ transaction.companyId }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="customer-info">
+                <span class="name">{{ transaction.customer.name }}</span>
+                <small class="email">{{ transaction.customer.email }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="amount">{{ fmt(transaction.amount, 'currency') }}</span>
+              <small class="fees" *ngIf="transaction.fees.totalFees > 0">
+                Taxa: {{ fmt(transaction.fees.totalFees, 'currency') }}
+              </small>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getTypeClass(transaction.type)">
+                {{ transaction.type }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(transaction.status)">
+                {{ transaction.status }}
+              </span>
+            </td>
+            <td>
+              <span class="payment-method">{{ transaction.paymentMethod }}</span>
+            </td>
+            <td>
+              <span class="acquirer">{{ transaction.acquirer }}</span>
+            </td>
+            <td>
+              <div class="date-info">
+                <span class="created">{{ transaction.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                <small class="processed" *ngIf="transaction.processedAt">
+                  Proc: {{ transaction.processedAt | date:'dd/MM/yyyy HH:mm' }}
+                </small>
+              </div>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewTransaction(transaction)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalItems > itemsPerPage">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+
+      <span class="page-info">
+        {{ paginationInfo.start }} - {{ paginationInfo.end }} de {{ paginationInfo.total }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage * itemsPerPage >= totalItems"
+        (click)="onPageChange(currentPage + 1)">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="340px">
+    <h3 header>Filtros de Transações</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">ID/Empresa/Cliente</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="onFilterChange()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Tipo de Transação</span>
+        <select [(ngModel)]="filters.type" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="payment">Pagamento</option>
+          <option value="withdrawal">Saque</option>
+          <option value="advance">Antecipação</option>
+          <option value="fee">Taxa</option>
+          <option value="refund">Reembolso</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="completed">Concluída</option>
+          <option value="pending">Pendente</option>
+          <option value="processing">Processando</option>
+          <option value="failed">Falhou</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="pix">PIX</option>
+          <option value="card">Cartão</option>
+          <option value="boleto">Boleto</option>
+          <option value="transfer">Transferência</option>
+          <option value="crypto">Criptomoeda</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Adquirente</span>
+        <select [(ngModel)]="filters.acquirer" (change)="onFilterChange()">
+          <option value="">Todos</option>
+          <option value="Stone">Stone</option>
+          <option value="Cielo">Cielo</option>
+          <option value="PagSeguro">PagSeguro</option>
+          <option value="Banco do Brasil">Banco do Brasil</option>
+          <option value="BitPay">BitPay</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Empresa</span>
+        <input type="text" [(ngModel)]="filters.companyId" (input)="onFilterChange()" placeholder="ID da empresa">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.amountMin" (input)="onFilterChange()" placeholder="0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.amountMax" (input)="onFilterChange()" placeholder="0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Taxa mínima</span>
+        <input type="number" [(ngModel)]="filters.feesMin" (input)="onFilterChange()" placeholder="0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Taxa máxima</span>
+        <input type="number" [(ngModel)]="filters.feesMax" (input)="onFilterChange()" placeholder="0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data inicial</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="onFilterChange()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data final</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="onFilterChange()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="transactionDialogVisible" title="Detalhes da Transação" width="600px"
+    (action)="handleDialogAction($event)">
+
+    <div *ngIf="selectedTransaction" class="transaction-details">
+      <div class="detail-section">
+        <h4>Informações Gerais</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>ID da Transação:</label>
+            <span>{{ selectedTransaction.id }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Empresa:</label>
+            <span>{{ selectedTransaction.companyName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Valor:</label>
+            <span>{{ fmt(selectedTransaction.amount, 'currency') }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Status:</label>
+            <span class="tag" [ngClass]="getStatusClass(selectedTransaction.status)">
+              {{ selectedTransaction.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Cliente</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Nome:</label>
+            <span>{{ selectedTransaction.customer.name }}</span>
+          </div>
+          <div class="detail-item">
+            <label>E-mail:</label>
+            <span>{{ selectedTransaction.customer.email }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Documento:</label>
+            <span>{{ selectedTransaction.customer.document }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Pagamento</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Método:</label>
+            <span>{{ selectedTransaction.paymentMethod }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Adquirente:</label>
+            <span>{{ selectedTransaction.acquirer }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Taxa da Adquirente:</label>
+            <span>{{ fmt(selectedTransaction.fees.acquirerFee, 'currency') }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Taxa da Plataforma:</label>
+            <span>{{ fmt(selectedTransaction.fees.platformFee, 'currency') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Datas</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Criada em:</label>
+            <span>{{ selectedTransaction.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+          </div>
+          <div class="detail-item" *ngIf="selectedTransaction.processedAt">
+            <label>Processada em:</label>
+            <span>{{ selectedTransaction.processedAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedTransaction.description">
+        <h4>Descrição</h4>
+        <p>{{ selectedTransaction.description }}</p>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

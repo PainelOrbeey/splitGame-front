@@ -1,0 +1,13 @@
+<div class="filter-tabs-wrapper">
+  <div class="tabs">
+    <button class="tab" *ngFor="let tab of tabs" [class.active]="selected === tab.value" (click)="selectTab(tab.value)">
+      {{ tab.label }}
+    </button>
+  </div>
+  <div class="actions-right">
+    <input class="search" type="text" [placeholder]="searchPlaceholder" [(ngModel)]="search"
+      (ngModelChange)="searchChange.emit(search)" />
+    <button class="btn export" (click)="export.emit()">Exportar CSV</button>
+    <i class="pi pi-filter filter" (click)="filterClick.emit()"></i>
+  </div>
+</div>

@@ -1,0 +1,315 @@
+$w-open: 270px;
+$w-closed: 72px;
+$transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+:host {
+  .flex {
+    display: flex;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .gap-3 {
+    gap: 1rem;
+  }
+}
+
+.orb-sidebar {
+  inset: 0 auto 0 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+  position: fixed;
+  width: $w-open;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  color: black;
+  transition: width $transition, left $transition;
+  z-index: 100;
+  overflow-x: hidden;
+
+  i {
+    transition: transform $transition;
+  }
+
+  .header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo {
+    height: 50px;
+    transition: opacity 0.2s, width $transition;
+    width: 119px;
+    opacity: 1;
+  }
+
+  .orb-user-info {
+    color: black;
+    display: flex;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.148);
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+
+  .avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+  }
+
+  .orb-user {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    padding: 0.9rem;
+    transition: padding $transition;
+    border-radius: 0.75rem;
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      transition: opacity 0.2s;
+      opacity: 1;
+      width: auto;
+      white-space: nowrap;
+
+      .name {
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .sub {
+        font-size: 0.65rem;
+        opacity: 0.6;
+      }
+      .balance {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #02794b;
+      }
+    }
+  }
+
+  nav,
+  footer {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li + li {
+    margin-top: 0.25rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: #fff;
+    text-decoration: none;
+    transition: background $transition, color $transition, gap $transition,
+      padding $transition;
+
+    .label {
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.2s;
+      color: black;
+    }
+
+    i {
+      font-size: 1.2rem;
+      transition: color $transition;
+      color: black;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    &.active {
+      background: #0000001d;
+      color: var(--gray-900);
+    }
+  }
+}
+
+:host(.collapsed) .orb-sidebar {
+  width: $w-closed;
+  gap: 1rem;
+
+  .toggle-btn i {
+    transform: rotate(180deg);
+  }
+
+  .orb-header,
+  .orb-user {
+    padding-inline: 0;
+    justify-content: center;
+  }
+
+  .label,
+  .info,
+  .logo {
+    opacity: 0;
+    width: 0;
+    pointer-events: none;
+  }
+
+  a {
+    gap: 0;
+    justify-content: center;
+    padding-inline: 0;
+
+    i {
+      margin: 0;
+    }
+  }
+}
+
+:host(.overlay) .orb-sidebar {
+  transform: translateX(-100%);
+  transition: transform $transition;
+
+  &:not(.collapsed) {
+    transform: translateX(0);
+  }
+}
+
+:host-context(.container-sidebar) .home-content {
+  margin-left: $w-open;
+  transition: margin-left $transition;
+}
+
+:host-context(.container-sidebar) .home-content.overlay {
+  margin-left: 0;
+}
+
+:host-context(.container-sidebar) .home-content.collapsed {
+  margin-left: $w-closed;
+}
+
+.orb-sidebar {
+  nav {
+    flex: 1 1 auto;
+  }
+  footer {
+    flex: 0 0 auto;
+  }
+}
+
+.menu-list {
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.orb-menu {
+  padding: 10px;
+}
+
+.orb-header {
+  padding: 1rem 0;
+  transition: padding $transition;
+  min-height: 108px;
+}
+
+.logo {
+  height: 108px;
+  transition: opacity 0.2s, width $transition;
+  width: auto;
+  opacity: 1;
+}
+
+.logo-icon {
+  height: 40px;
+  width: auto;
+  transition: opacity 0.2s;
+}
+
+.toggle-icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+:host(.collapsed) .orb-sidebar {
+  .header {
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+}
+.submenu-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  color: black;
+  cursor: pointer;
+  transition: background 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.submenu {
+  padding-left: 1.5rem;
+  margin-top: 0.45rem !important;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  a {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+}
+
+.orb-sidebar {
+  nav,
+  footer {
+    overflow-y: auto;
+
+    scrollbar-width: none;
+
+    -ms-overflow-style: none;
+  }
+
+  nav::-webkit-scrollbar,
+  footer::-webkit-scrollbar {
+    display: none;
+  }
+}

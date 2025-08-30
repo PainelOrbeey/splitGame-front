@@ -1,0 +1,27 @@
+$sidebar-width-open: 270px;
+$sidebar-width-closed: 72px;
+$sidebar-transition: .3s cubic-bezier(.4,0,.2,1);
+
+.container-sidebar {
+  display: flex;
+  min-height: 100vh;
+  --sidebar-width: #{$sidebar-width-open};
+}
+.container-sidebar:has(app-admin-sidebar.collapsed) {
+  --sidebar-width: #{$sidebar-width-closed};
+}
+
+.home-content {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 20px;
+  margin-left: var(--sidebar-width);
+  transition: margin-left $sidebar-transition;
+}
+@media screen and (max-width: 768px) {
+  .home-content {
+   padding: 4px;
+     margin-left: 72px;
+  }
+
+}

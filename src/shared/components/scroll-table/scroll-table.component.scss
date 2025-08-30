@@ -1,0 +1,107 @@
+// %card-base {
+//   background-color: var(--card-bg);
+//   border-radius: var(--border-radius);
+//   padding: 1.5rem;
+//   box-shadow: 0 2px 6px rgba(0, 0, 0, .08);
+//   display: flex;
+//   flex-direction: column;
+//   color: var(--text-main);
+//   border: none;
+//   transition: background-color .3s ease;
+// }
+
+// .table-wrapper {
+//   @extend %card-base;
+//   margin-top: 1.5rem;
+// }
+
+// /* ---------- DIV DE SCROLL INTERNO ---------- */
+// .table-scroll {
+//   width: 100%;
+//   overflow-x: auto;           /* scroll horizontal */
+//   -webkit-overflow-scrolling: touch; /* suave no iOS */
+//   scrollbar-color: #e0e0e0 #ffffff;         /* thumb | track */
+
+// }
+
+// /* ---------- TABELA (mantém estilo original) ---------- */
+// .user-table {
+//   width: 100%;
+//   min-width: 900px;           /* força scroll em telas < 900 px */
+//   font-size: 0.9rem;
+//   background: var(--card-bg);
+//   border-radius: var(--border-radius) !important;
+//   border-collapse: collapse;
+
+//   thead th {
+//     text-align: left;
+//     padding: 0.75rem 1rem;
+//     font-size: 0.85rem;
+//     font-weight: 500;
+//     color: var(--text-muted);
+//     white-space: nowrap;
+//   }
+
+//   tbody tr {
+//     border-bottom: 1px solid var(--border-color);
+
+//     td {
+//       padding: 0.75rem 1rem;
+//       vertical-align: middle;
+//       white-space: nowrap;    /* evita quebra feia */
+//     }
+
+//     .user-info {
+//       display: flex;
+//       align-items: center;
+//       gap: 0.75rem;
+
+//       .avatar {
+//         width: 32px;
+//         height: 32px;
+//         border-radius: 50%;
+//         object-fit: cover;
+//       }
+//       .name   { font-weight: 600; }
+//       .handle { font-size: 0.8rem; color: var(--text-muted); }
+//     }
+
+//     .tag {
+//       padding: 0.2rem 0.6rem;
+//       border-radius: 6px;
+//       font-size: 0.75rem;
+//       font-weight: 600;
+//       text-transform: capitalize;
+
+//       &.success { background: #d1fae5; color: #047857; }  /* Pago */
+//       &.warning { background: #fef3c7; color: #92400e; }  /* Pendente */
+//     }
+
+//     .action-menu-wrapper {
+//       position: relative;
+
+//       .custom-action-menu {
+//         position: absolute;
+//         top: 1.5rem;
+//         right: 0;
+//         background: var(--card-bg);
+//         box-shadow: 0 2px 6px rgba(0, 0, 0, .15);
+//         border-radius: 8px;
+//         padding: 0.5rem 0;
+//         z-index: 20;
+
+//         li {
+//           padding: 0.5rem 1.2rem;
+//           display: flex;
+//           align-items: center;
+//           gap: 0.5rem;
+//           cursor: pointer;
+//           white-space: nowrap;
+
+//           &:hover  { background: var(--bg-hover); }
+//           &.danger { color: #b91c1c; }
+//         }
+//       }
+//     }
+//   }
+// }

@@ -1,0 +1,86 @@
+:host {
+  --danger-color: #e53935;
+  --danger-color-hover: #c62828;
+}
+
+.custom-confirm-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+
+  .modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+
+    backdrop-filter: blur(2px);
+  }
+
+  .modal-content {
+    position: relative;
+    background: var(--card-bg);
+    color: var(--text-main);
+    border-radius: var(--border-radius);
+    padding: 2rem 2.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    z-index: 1;
+    min-width: 320px;
+    max-width: 450px;
+    text-align: start;
+    border: 1px solid var(--border-color);
+
+    h3 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-top: 0.5rem;
+      color: var(--text-muted);
+      font-size: var(--font-size-base);
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+
+      .btn {
+        padding: 0.7rem 1.5rem;
+        border-radius: calc(var(--border-radius) / 2);
+        border: 1px solid transparent;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color var(--transition),
+          border-color var(--transition);
+
+        background: var(--bg-main);
+        color: var(--text-main);
+        border-color: var(--border-color);
+
+        &:hover {
+          background: var(--border-color);
+        }
+
+        &.danger {
+          background: var(--danger-color);
+          color: var(--metric-text);
+          border-color: var(--danger-color);
+
+          &:hover {
+            background: var(--danger-color-hover);
+            border-color: var(--danger-color-hover);
+          }
+        }
+      }
+    }
+  }
+}

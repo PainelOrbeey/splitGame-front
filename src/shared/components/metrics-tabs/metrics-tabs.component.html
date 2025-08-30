@@ -1,0 +1,11 @@
+<div class="metrics-navigation">
+  <button
+    *ngFor="let tab of tabs"
+    class="metrics-tab"
+    [class.active]="active === tab.value"
+    (click)="setActive(tab.value)"
+  >
+    <i *ngIf="tab.icon" [class]="tab.icon"></i>
+    {{ tab.label }}
+  </button>
+</div>

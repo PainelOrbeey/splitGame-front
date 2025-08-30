@@ -1,0 +1,22 @@
+<div class="backdrop" *ngIf="visible" (click)="close()"></div>
+
+<div class="dialog" *ngIf="visible">
+  <header>
+    <h3>{{ title }}</h3>
+    <i class="pi pi-times close" (click)="close()"></i>
+  </header>
+
+  <section class="content">
+    <ng-content></ng-content> <!-- corpo -->
+  </section>
+
+  <footer>
+    <!-- gera botões conforme @Input actions -->
+    <button *ngFor="let a of actions" [ngClass]="{
+        'btn-primary': a.type === 'primary',
+        'btn-text'   : a.type === 'text'
+      }" (click)="onAction(a.id)">
+      {{ a.label }}
+    </button>
+  </footer>
+</div>

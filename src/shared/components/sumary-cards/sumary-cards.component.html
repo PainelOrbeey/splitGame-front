@@ -1,0 +1,12 @@
+<div class="summary-card">
+  <div class="content-section">
+    <span class="title">{{ title }}</span>
+    <div class="metrics-row">
+      <h4 class="value">{{ value }}</h4>
+      <span class="delta" [ngClass]="deltaType" *ngIf="delta">{{ delta }}</span>
+    </div>
+  </div>
+  <div class="icon-container">
+    <i [class]="icon + ' icon-graph'"></i>
+  </div>
+</div>

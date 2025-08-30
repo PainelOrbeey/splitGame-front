@@ -1,0 +1,35 @@
+<div #trigger type="button" class="profile-trigger" pRipple (click)="toggleMenu()">
+
+
+  <div class="info">
+    <strong>{{ username }}</strong>
+    <small>{{ email }}</small>
+  </div>
+  <i class="pi pi-chevron-down text-sm"></i>
+</div>
+
+<!-- ─── MENU (P-DIALOG) ───────────────────────────────── -->
+<p-dialog #menu [(visible)]="menuVisible" [modal]="false" [draggable]="false" [resizable]="false"
+  [dismissableMask]="true" [blockScroll]="false" [style]="{ width:'280px', padding:'0'}" [styleClass]="'user-menu'"
+  (onShow)="reposition()" (onHide)="menuVisible = false" [baseZIndex]="1100" [closable]="false"
+  styleClass="!bg-transparent !border-0 user-menu">
+  <section class="menu-body custom-bg">
+    <h3>Olá, {{ username }} 👋</h3>
+
+    <p>Saldo: <strong class="text-green-600">
+        {{ saldo | currency:'BRL':'symbol':'1.2-2' }}
+      </strong></p>
+    <p>Saldo em Protesto: <strong class="text-green-600">
+        {{ saldoProtesto | currency:'BRL':'symbol':'1.2-2' }}
+      </strong></p>
+
+    <div class="theme-row">
+      <span>Tema do site</span>
+      <p-inputSwitch [(ngModel)]="darkMode" (onChange)="toggleTheme()"></p-inputSwitch>
+    </div>
+
+    <button pButton type="button" class="w-full p-button-danger p-button-outlined" (click)="logout()">
+      <i class="pi pi-sign-out me-2"></i> Sair
+    </button>
+  </section>
+</p-dialog>

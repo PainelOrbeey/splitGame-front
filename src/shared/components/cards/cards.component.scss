@@ -1,0 +1,56 @@
+// ...existing code...
+
+.metric-card {
+  min-width: 160px;
+  height: 110px;
+  display: flex;
+  align-items: flex-start;
+  border-radius: 1.25rem;
+  padding: 1rem;
+  background: var(--metric-gradient, var(--color-sidebar));
+  color: white;
+
+  .icon   {
+    font-size: 1.25rem;
+    margin-right: .75rem;
+    color: var(--primary);
+  }
+  .title  {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: white;
+  }
+  .desc   {
+    font-size: var(--font-size-xs);
+    opacity: .8;
+    display: block;
+    margin-top: .2rem;
+    color: white;
+  }
+  .value  {
+    margin-top: .35rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white
+  }
+}
+
+// Para o tema escuro
+.dark .metric-card {
+  background: var(--color-summary-card);
+
+  .title {
+    color: var(--text-color-title);
+  }
+
+  .desc {
+    color: var(--foreground);
+  }
+
+  .icon,
+  .value {
+    color: var(--primary);
+  }
+}
+
+// ...existing code...

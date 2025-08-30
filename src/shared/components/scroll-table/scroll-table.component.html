@@ -1,0 +1,28 @@
+<div class="table-scroll">
+  <table class="scroll-table">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns">{{ col.header }}</th>
+        <th *ngIf="actionsTpl"></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let row of data">
+        <td *ngFor="let col of columns">
+          <!-- se houver template externo, usa-o -->
+          <ng-container *ngIf="cellTpl; else defaultCell" [ngTemplateOutlet]="cellTpl"
+            [ngTemplateOutletContext]="{ $implicit: row[col.key], row, key: col.key }">
+          </ng-container>
+
+          <ng-template #defaultCell>{{ row[col.key] }}</ng-template>
+        </td>
+
+        <td *ngIf="actionsTpl">
+          <ng-container [ngTemplateOutlet]="actionsTpl" [ngTemplateOutletContext]="{ row }">
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

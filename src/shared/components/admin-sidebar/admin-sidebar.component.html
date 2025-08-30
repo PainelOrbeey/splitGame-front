@@ -1,0 +1,74 @@
+<aside class="orb-sidebar">
+
+  <div class="header">
+    <ng-container *ngIf="!collapsed; else smallLogo">
+      <img src="/logo_colored.png" alt="Orbeey" class="logo" />
+    </ng-container>
+    <ng-template #smallLogo>
+      <img src="/icon_colored.png" alt="Orbeey" class="logo-icon" />
+    </ng-template>
+
+    <i class="pi toggle-icon" [ngClass]="collapsed ? 'pi-chevron-right' : 'pi-bars'" (click)="toggle()"></i>
+  </div>
+
+  <!--
+  <section class="orb-user ">
+    <div class="orb-user-info">
+      <p-avatar class="avatar" image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
+        shape="circle"></p-avatar>
+      <div class="info" *ngIf="!collapsed">
+
+        <small class="name">Orbeey admin</small>
+        <small class="sub">Saldo disponível</small>
+        <span class="balance">R$ 123.456,90</span>
+      </div>
+    </div>
+
+  </section> -->
+
+  <nav class="orb-menu">
+    <ul class="menu-list">
+      <li *ngFor="let item of menu">
+        <ng-container *ngIf="!item.children; else hasChildren">
+          <a pRipple [routerLink]="item.route" routerLinkActive="active" (click)="handleLinkClick(item)">
+            <i [ngClass]="item.icon"></i>
+            <span class="label">{{ item.label }}</span>
+            <p-badge *ngIf="item.badge" [value]="item.badge" severity="success" class="ml-auto"></p-badge>
+          </a>
+        </ng-container>
+
+        <ng-template #hasChildren>
+          <div class="submenu-group" (click)="handleGroupClick(item)">
+            <i [ngClass]="item.icon"></i>
+            <span class="label">{{ item.label }}</span>
+            <i class="pi" [ngClass]="item.expanded ? 'pi-chevron-down' : 'pi-chevron-right'" style="margin-left:auto;"
+              *ngIf="!collapsed"></i>
+          </div>
+
+          <ul class="submenu" *ngIf="!collapsed && item.expanded">
+            <li *ngFor="let child of item.children">
+              <a pRipple [routerLink]="child.route" routerLinkActive="active">
+                <i [ngClass]="child.icon"></i>
+                <span class="label">{{ child.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-template>
+      </li>
+    </ul>
+
+  </nav>
+
+  <!-- FOOTER -->
+  <footer class="orb-menu">
+    <ul>
+      <li *ngFor="let item of footer">
+        <a pRipple [routerLink]="item.route" routerLinkActive="active" (click)="handleLinkClick(item)">
+          <i [ngClass]="item.icon"></i>
+          <span class="label">{{ item.label }}</span>
+        </a>
+      </li>
+    </ul>
+  </footer>
+
+</aside>

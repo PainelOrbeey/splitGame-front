@@ -1,0 +1,16 @@
+<aside class="drawer" [class.open]="visible" [ngStyle]="{ width: width }">
+  <header class="drawer-header">
+    <ng-content select="[header]"></ng-content>
+    <i class="pi pi-times close-icon" (click)="close()"></i>
+  </header>
+
+  <section class="drawer-content">
+    <ng-content></ng-content>
+  </section>
+
+  <footer class="drawer-footer">
+    <ng-content select="[footer]"></ng-content>
+  </footer>
+</aside>
+
+<div class="overlay" [class.show]="visible" (click)="close()"></div>

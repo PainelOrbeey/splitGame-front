@@ -1,0 +1,17 @@
+<section class="toast-container" aria-live="polite" aria-relevant="additions" role="region" aria-label="Notifications">
+  <article
+    *ngFor="let t of toasts"
+    class="toast" [class.success]="t.type==='success'" [class.info]="t.type==='info'" [class.warning]="t.type==='warning'" [class.error]="t.type==='error'"
+    (mouseenter)="onMouseEnter(t)" (mouseleave)="onMouseLeave(t)"
+    [attr.role]="t.type==='error' ? 'alert' : 'status'"
+  >
+    <div class="icon" [innerHTML]="icon(t.type)"></div>
+    <div class="content">
+      <div class="title">{{ t.title }}</div>
+      <div class="message" *ngIf="t.message">{{ t.message }}</div>
+      <a *ngIf="t.action?.routerLink" [routerLink]="t.action.routerLink" class="action">{{ t.action.label }}</a>
+      <button *ngIf="t.action && !t.action.routerLink" type="button" class="action btn-link" (click)="t.action.onClick?.()">{{ t.action.label }}</button>
+    </div>
+    <button *ngIf="t.closable" type="button" class="close" aria-label="Dismiss" (click)="dismiss(t.id)">×</button>
+  </article>
+</section>

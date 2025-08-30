@@ -1,0 +1,457 @@
+
+%card-base {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-main);
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+
+.container-wrapper {
+
+
+  // Metrics Grid
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .metric-card {
+      @extend %card-base;
+      padding: 1.25rem;
+
+      &.sales-card {
+        grid-row: 1 / 3;
+        padding: 1.5rem;
+      }
+
+      .metric-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h3 {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-main);
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .dropdown-trigger {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          cursor: pointer;
+
+          span {
+            font-weight: 500;
+          }
+
+          i {
+            font-size: 0.75rem;
+          }
+        }
+      }
+
+      .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+      }
+
+      .metric-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+
+        .metric-info {
+          flex: 1;
+
+          .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+          }
+
+          .metric-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+
+            &.positive {
+              color: #00c896;
+            }
+
+            &.negative {
+              color: #ff3b30;
+            }
+
+            .period {
+              color: var(--text-muted);
+              font-weight: 400;
+            }
+          }
+        }
+
+        .mini-chart {
+          width: 60px;
+          height: 30px;
+          flex-shrink: 0;
+
+          canvas {
+            width: 100% !important;
+            height: 100% !important;
+          }
+        }
+      }
+
+      .chart-container {
+        height: 200px;
+        margin-top: 1rem;
+
+        canvas {
+          width: 100% !important;
+          height: 100% !important;
+        }
+      }
+    }
+  }
+
+  // Charts Section
+  .charts-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    .chart-card {
+      @extend %card-base;
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+
+        h3 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--text-main);
+          margin: 0;
+        }
+
+        i {
+          color: var(--text-muted);
+          cursor: pointer;
+        }
+
+        .dropdown-trigger {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          cursor: pointer;
+
+          span {
+            font-weight: 500;
+          }
+        }
+      }
+
+      &.funnel-card {
+        .funnel-metrics {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+
+          .funnel-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            .funnel-icon {
+              width: 32px;
+              height: 32px;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+
+              i {
+                font-size: 1rem;
+              }
+            }
+
+            .funnel-info {
+              display: flex;
+              flex-direction: column;
+
+              .funnel-label {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                margin-bottom: 0.25rem;
+              }
+
+              .funnel-value {
+                font-size: 1rem;
+                font-weight: 700;
+                color: var(--text-main);
+              }
+            }
+          }
+        }
+
+        .funnel-chart {
+          height: 150px;
+
+          canvas {
+            width: 100% !important;
+            height: 100% !important;
+          }
+        }
+      }
+
+      &.category-card {
+        .category-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .category-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+
+            .category-item {
+              .category-info {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+
+                .category-dot {
+                  width: 8px;
+                  height: 8px;
+                  border-radius: 50%;
+                  background: var(--blue-500);
+                  flex-shrink: 0;
+                }
+
+                .category-details {
+                  display: flex;
+                  flex-direction: column;
+
+                  .category-name {
+                    font-size: 0.875rem;
+                    font-weight: 600;
+                    color: var(--text-main);
+                    margin-bottom: 0.25rem;
+                  }
+
+                  .category-products {
+                    font-size: 0.75rem;
+                    color: var(--text-muted);
+                  }
+                }
+              }
+            }
+          }
+
+          .category-chart {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            flex-shrink: 0;
+
+            canvas {
+              width: 100% !important;
+              height: 100% !important;
+            }
+
+            .chart-center {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              text-align: center;
+
+              .total-value {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--text-main);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Table Section
+  .table-section {
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+
+      h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+      }
+
+      .table-actions {
+        .filter-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: transparent;
+          border: 1px solid var(--border-color);
+          color: var(--text-muted);
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          font-size: 0.875rem;
+          cursor: pointer;
+          transition: all var(--transition);
+
+          &:hover {
+            background: var(--bg-main);
+          }
+
+          i {
+            font-size: 0.875rem;
+          }
+        }
+      }
+    }
+
+    .table-card {
+      @extend %card-base;
+      padding: 0;
+      overflow: hidden;
+
+      .invoices-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          background: var(--bg-main);
+
+          th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid var(--border-color);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            td {
+              padding: 1rem 1.5rem;
+              font-size: 0.875rem;
+              color: var(--text-main);
+
+              .status-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: capitalize;
+
+                &.status-completed {
+                  background: #d1fae5;
+                  color: #047857;
+                }
+
+                &.status-pending {
+                  background: #fef3c7;
+                  color: #92400e;
+                }
+
+                &.status-failed {
+                  background: #fee2e2;
+                  color: #b91c1c;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1400px) {
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto auto !important;
+
+    .sales-card {
+      grid-row: 1 / 2 !important;
+    }
+  }
+
+  .charts-section {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-main {
+    margin-left: 0;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-wrapper {
+    padding: 1rem;
+
+    .header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+
+      h2 {
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+}

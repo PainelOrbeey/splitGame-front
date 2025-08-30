@@ -1,0 +1,152 @@
+<section class="container-wrapper-viewer">
+  <i class="pi pi-arrow-left" (click)="back()" style="cursor: pointer;"></i>
+  <header class="header">
+    <h2>Gerenciamento de dados</h2>
+    <app-user-menu [username]="'Orbeey'" [email]="'suporteorbeey@gmail.com'" [saldo]="3.49" [saldoProtesto]="0" />
+  </header>
+
+  <div class="viewer" *ngIf="visible">
+    <!-- HEADER / AÇÕES -->
+    <header class="viewer__header">
+      <div class="viewer__header-info">
+        <ng-container *ngIf="hasAvatar()">
+          <div class="avatar">
+            <img *ngIf="avatarSrc(); else initialsTpl" [src]="avatarSrc()" [alt]="config.title" />
+            <ng-template #initialsTpl>
+              {{ initials(config.title) }}
+            </ng-template>
+          </div>
+        </ng-container>
+        <div>
+          <h1>{{ config.title }}</h1>
+          <p *ngIf="config.subtitle">{{ config.subtitle }}</p>
+        </div>
+      </div>
+
+      <div class="viewer__actions">
+        <button *ngIf="!isEditing && config.actions?.edit !== false" (click)="isEditing = true"
+          class="btn btn--outline">
+          <i class="icon-edit"></i> Editar
+        </button>
+
+        <ng-container *ngIf="isEditing">
+          <div style="flex-wrap: wrap; display: flex; gap: .5rem;">
+
+            <button (click)="save()" class="btn btn--primary">
+              <i class="icon-save"></i> Salvar
+            </button>
+            <button (click)="cancel()" class="btn btn--outline">
+              Cancelar
+            </button>
+          </div>
+
+        </ng-container>
+
+        <ng-container *ngIf="config.actions?.custom as actions">
+          <button *ngFor="let a of actions" (click)="custom(a.action)" [class]="'btn ' + (a.class || 'btn--outline')">
+            <i *ngIf="a.icon" [class]="a.icon"></i> {{ a.label }}
+          </button>
+        </ng-container>
+
+        <button (click)="close()" class="btn btn--ghost">
+          <i class="icon-close"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MÉTRICAS -->
+    <section *ngIf="config.metrics?.length" class="viewer__metrics">
+      <article *ngFor="let m of config.metrics" class="metric" [ngClass]="m.deltaType ? 'metric--' + m.deltaType : ''">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+          <div>
+            <div class="metric__title">{{ m.title }}</div>
+            <div class="metric__value">{{ formatMetric(m) }}</div>
+          </div>
+          <div *ngIf="m.icon" style="margin-left:8px;">
+            <i [class]="m.icon" style="font-size:1.25rem; opacity:.8;"></i>
+          </div>
+        </div>
+        <div *ngIf="m.delta" class="metric__delta" style="margin-top:4px;">
+          <span [ngClass]="{'up': m.deltaType==='up','down': m.deltaType==='down'}">{{ m.delta }}</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- SEÇÕES -->
+    <section *ngFor="let sec of config.sections" class="viewer__section">
+      <header class="viewer__section-header">
+        <div style="display:flex; align-items:center; gap:.5rem;">
+          <i *ngIf="sec.icon" [class]="sec.icon" style="margin-right:.5rem;"></i>
+          <h2>{{ sec.title }}</h2>
+        </div>
+        <p *ngIf="sec.subtitle" style="margin:4px 0 0; color: var(--text-muted);">{{ sec.subtitle }}</p>
+      </header>
+
+      <div class="viewer__section-content">
+        <div class="fields">
+          <div *ngFor="let f of sec.fields" class="field" [ngClass]="'field--' + f.type">
+            <label class="field__label">{{ f.label }}</label>
+
+            <!-- text / email -->
+            <ng-container *ngIf="f.type === 'text' || f.type === 'email'">
+              <input *ngIf="isEditing && f.editable !== false" class="field__input" [type]="f.type"
+                [value]="getValue(f.key)" (input)="setValue(f.key,$any($event.target).value)"
+                [placeholder]="f.placeholder" [required]="f.required" />
+              <div *ngIf="!isEditing || f.editable === false" class="field__display">
+                <i *ngIf="f.icon" [class]="f.icon"></i>
+                {{ formatField(f,getValue(f.key)) }}
+              </div>
+            </ng-container>
+
+            <!-- number / currency -->
+            <ng-container *ngIf="f.type === 'number' || f.type === 'currency'">
+              <input *ngIf="isEditing && f.editable !== false" type="number" class="field__input"
+                [value]="getValue(f.key)" (input)="setValue(f.key,$any($event.target).value)"
+                [placeholder]="f.placeholder" [required]="f.required" />
+              <div *ngIf="!isEditing || f.editable === false" class="field__display">
+                <i *ngIf="f.icon" [class]="f.icon"></i>
+                <span [ngClass]="f.type==='currency' ? 'currency-value' : ''">
+                  {{ formatField(f,getValue(f.key)) }}
+                </span>
+              </div>
+            </ng-container>
+
+            <!-- select / badge -->
+            <ng-container *ngIf="f.type === 'select' || f.type === 'badge'">
+              <select *ngIf="isEditing && f.editable !== false" class="field__select" [value]="getValue(f.key)"
+                (change)="setValue(f.key,$any($event.target).value)" [required]="f.required">
+                <option *ngFor="let o of f.options" [value]="o.value">{{ o.label }}</option>
+              </select>
+              <div *ngIf="!isEditing || f.editable === false" class="field__display">
+                <ng-container *ngIf="f.type==='select'">
+                  {{ optionLabel(f,getValue(f.key)) }}
+                </ng-container>
+                <ng-container *ngIf="f.type==='badge'">
+                  <span class="badge" [ngClass]="'badge--' + badgeCfg(f,getValue(f.key)).class">
+                    {{ badgeCfg(f,getValue(f.key)).label }}
+                  </span>
+                </ng-container>
+              </div>
+            </ng-container>
+
+            <!-- date -->
+            <ng-container *ngIf="f.type === 'date'">
+              <input *ngIf="isEditing && f.editable !== false" type="date" class="field__input"
+                [value]="getValue(f.key)" (input)="setValue(f.key,$any($event.target).value)" [required]="f.required" />
+              <div *ngIf="!isEditing || f.editable === false" class="field__display">
+                {{ formatField(f,getValue(f.key)) }}
+              </div>
+            </ng-container>
+
+            <!-- readonly -->
+            <ng-container *ngIf="f.type === 'readonly'">
+              <div class="field__display readonly">
+                {{ formatField(f,getValue(f.key)) }}
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>

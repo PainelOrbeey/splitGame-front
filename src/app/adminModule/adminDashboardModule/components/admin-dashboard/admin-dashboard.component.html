@@ -1,0 +1,150 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Dashboard</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <!-- Metrics Cards Grid -->
+  <div class="metrics-grid">
+    <!-- Total Sales Card with Bar Chart -->
+    <div class="metric-card sales-card">
+      <div class="metric-header">
+        <h3>{{ metricCards[0].title }}</h3>
+        <div class="dropdown-trigger">
+          <span>LAST WEEK</span>
+          <i class="pi pi-chevron-down"></i>
+        </div>
+      </div>
+      <div class="metric-value">{{ metricCards[0].value }}</div>
+      <div class="chart-container">
+        <canvas #salesChart></canvas>
+      </div>
+    </div>
+
+    <!-- Other Metric Cards -->
+    <div *ngFor="let card of metricCards.slice(1)" class="metric-card">
+      <div class="metric-header">
+        <h3>{{ card.title }}</h3>
+      </div>
+      <div class="metric-content">
+        <div class="metric-info">
+          <div class="metric-value">{{ card.value }}</div>
+          <div class="metric-change" [class]="card.changeType">
+            {{ card.change }} <span class="period">{{ card.period }}</span>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <canvas #miniChart
+            (ngAfterViewInit)="createMiniChart(miniChart, card.chartData, card.chartType, card.changeType === 'positive' ? '#00c896' : '#ff3b30')">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <!-- Sales Funnel -->
+    <div class="chart-card funnel-card">
+      <div class="chart-header">
+        <h3>Sales Funnel</h3>
+        <i class="pi pi-ellipsis-h"></i>
+      </div>
+
+      <div class="funnel-metrics">
+        <div *ngFor="let item of salesFunnelItems" class="funnel-item">
+          <div class="funnel-icon" [style.background-color]="item.color">
+            <i [class]="item.icon"></i>
+          </div>
+          <div class="funnel-info">
+            <span class="funnel-label">{{ item.label }}</span>
+            <span class="funnel-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="funnel-chart">
+        <canvas #funnelChart></canvas>
+      </div>
+    </div>
+
+    <!-- Sales by Category -->
+    <div class="chart-card category-card">
+      <div class="chart-header">
+        <h3>Sales by Category</h3>
+        <div class="dropdown-trigger">
+          <span>LAST WEEK</span>
+          <i class="pi pi-chevron-down"></i>
+        </div>
+      </div>
+
+      <div class="category-content">
+        <div class="category-list">
+          <div *ngFor="let category of categoryItems" class="category-item">
+            <div class="category-info">
+              <div class="category-dot"></div>
+              <div class="category-details">
+                <span class="category-name">{{ category.name }} ({{ category.percentage }}%)</span>
+                <span class="category-products">{{ category.products }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="category-chart">
+          <canvas #categoryChart></canvas>
+          <div class="chart-center">
+            <span class="total-value">$6.8K</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Invoices Table -->
+  <div class="table-section">
+    <div class="table-header">
+      <h3>Vendas recentes</h3>
+      <div class="table-actions">
+        <button class="filter-btn">
+          <i class="pi pi-filter"></i>
+          Filter & Sort
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table class="invoices-table">
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>ID CUSTOMER</th>
+            <th>CUSTOMER NAME</th>
+            <th>CUSTOMER ADDRESS</th>
+            <th>DATE</th>
+            <th>TYPE</th>
+            <th>STATUS</th>
+            <th>AMOUNT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of recentInvoices">
+            <td>{{ invoice.no }}</td>
+            <td>{{ invoice.idCustomer }}</td>
+            <td>{{ invoice.customerName }}</td>
+            <td>{{ invoice.customerAddress }}</td>
+            <td>{{ invoice.date }}</td>
+            <td>{{ invoice.type }}</td>
+            <td>
+              <span [class]="'status-badge ' + getStatusClass(invoice.status)">
+                {{ invoice.status }}
+              </span>
+            </td>
+            <td>{{ invoice.amount }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

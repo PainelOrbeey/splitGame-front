@@ -1,0 +1,306 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Todas as Empresas</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Empresas" [value]="fmt(metrics.totalCompanies, 'int')"
+      icon="pi pi-building">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Empresas Ativas" [value]="fmt(metrics.activeCompanies, 'int')"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="KYC Pendente" [value]="fmt(metrics.pendingKyc, 'int')"
+      icon="pi pi-clock">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      icon="pi pi-dollar">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Receita Média" [value]="fmt(metrics.averageRevenue, 'currency')"
+      icon="pi pi-chart-line">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Conversão" [value]="fmt(metrics.conversionRate, 'percent', 1, 1)"
+      icon="pi pi-percentage">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todas', value: '' },
+        { label: 'Ativas', value: 'active' },
+        { label: 'Pendentes', value: 'pending' },
+        { label: 'Inativas', value: 'inactive' },
+        { label: 'Bloqueadas', value: 'blocked' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Lista de Empresas ({{ totalItems }})</h3>
+    </div>
+
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>CNPJ</th>
+            <th>Categoria</th>
+            <th>Status</th>
+            <th>KYC</th>
+            <th>Receita</th>
+            <th>Funcionários</th>
+            <th>Estado</th>
+            <th>Criado em</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let company of paginatedCompanies">
+            <td>
+              <div class="user-info">
+                <div>
+                  <div class="name">{{ company.name }}</div>
+                  <div class="handle">{{ company.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ company.cnpj }}</td>
+            <td>{{ company.category }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(company.status)">
+                {{ company.status | titlecase }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getKycStatusClass(company.kycStatus)">
+                {{ company.kycStatus | titlecase }}
+              </span>
+            </td>
+            <td>{{ fmt(company.totalRevenue, 'currency') }}</td>
+            <td>{{ company.employees }}</td>
+            <td>{{ company.address.state }}</td>
+            <td>{{ company.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn view-btn" (click)="viewCompany(company)">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" [currentPage]="itemsPerPage"
+    (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Empresas</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Nome/Email/CNPJ</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status da Empresa</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="active">Ativa</option>
+          <option value="inactive">Inativa</option>
+          <option value="pending">Pendente</option>
+          <option value="blocked">Bloqueada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Status KYC</span>
+        <select [(ngModel)]="filters.kycStatus" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="approved">Aprovado</option>
+          <option value="pending">Pendente</option>
+          <option value="rejected">Rejeitado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Categoria</span>
+        <select [(ngModel)]="filters.category" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="Tecnologia">Tecnologia</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Varejo">Varejo</option>
+          <option value="Serviços">Serviços</option>
+          <option value="Indústria">Indústria</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Estado</span>
+        <select [(ngModel)]="filters.state" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="SP">São Paulo</option>
+          <option value="RJ">Rio de Janeiro</option>
+          <option value="MG">Minas Gerais</option>
+          <option value="RS">Rio Grande do Sul</option>
+          <option value="PR">Paraná</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita mínima</span>
+        <input type="number" [(ngModel)]="filters.minRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita máxima</span>
+        <input type="number" [(ngModel)]="filters.maxRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Funcionários mín.</span>
+        <input type="number" [(ngModel)]="filters.minEmployees" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Funcionários máx.</span>
+        <input type="number" [(ngModel)]="filters.maxEmployees" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume mensal mín.</span>
+        <input type="number" [(ngModel)]="filters.minVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume mensal máx.</span>
+        <input type="number" [(ngModel)]="filters.maxVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data de cadastro (início)</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data de cadastro (fim)</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="companyDialogVisible" title="Detalhes da Empresa" [actions]="[
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleDialogAction($event)" width="900px" maxHeight="90vh">
+
+    <div *ngIf="selectedCompany" class="company-details">
+      <div class="details-grid">
+        <div class="detail-section">
+          <h4>Informações Básicas</h4>
+          <div class="detail-item">
+            <label>Nome:</label>
+            <span>{{ selectedCompany.name }}</span>
+          </div>
+          <div class="detail-item">
+            <label>CNPJ:</label>
+            <span>{{ selectedCompany.cnpj }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Email:</label>
+            <span>{{ selectedCompany.email }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Telefone:</label>
+            <span>{{ selectedCompany.phone }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Categoria:</label>
+            <span>{{ selectedCompany.category }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Endereço</h4>
+          <div class="detail-item">
+            <label>Rua:</label>
+            <span>{{ selectedCompany.address.street }}, {{ selectedCompany.address.number }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Cidade:</label>
+            <span>{{ selectedCompany.address.city }} - {{ selectedCompany.address.state }}</span>
+          </div>
+          <div class="detail-item">
+            <label>CEP:</label>
+            <span>{{ selectedCompany.address.zipCode }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Representante</h4>
+          <div class="detail-item">
+            <label>Nome:</label>
+            <span>{{ selectedCompany.representative.name }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Email:</label>
+            <span>{{ selectedCompany.representative.email }}</span>
+          </div>
+          <div class="detail-item">
+            <label>CPF:</label>
+            <span>{{ selectedCompany.representative.cpf }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Métricas</h4>
+          <div class="detail-item">
+            <label>Receita Total:</label>
+            <span>{{ fmt(selectedCompany.totalRevenue, 'currency') }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Transações:</label>
+            <span>{{ selectedCompany.totalTransactions }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Funcionários:</label>
+            <span>{{ selectedCompany.employees }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Volume Mensal:</label>
+            <span>{{ fmt(selectedCompany.monthlyVolume, 'currency') }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Status:</label>
+            <span class="tag" [ngClass]="getStatusClass(selectedCompany.status)">
+              {{ selectedCompany.status | titlecase }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <label>Status KYC:</label>
+            <span class="tag" [ngClass]="getKycStatusClass(selectedCompany.kycStatus)">
+              {{ selectedCompany.kycStatus | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

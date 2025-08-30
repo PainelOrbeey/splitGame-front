@@ -1,0 +1,224 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Solicitações de KYC</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@splitgame.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+  <div class="metrics-grid">
+    <app-summary-card class="width-max" title="Total de Solicitações" [value]="fmt(metrics.totalRequests, 'int')"
+      icon="pi pi-file-check">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Solicitações Pendentes" [value]="fmt(metrics.pendingRequests, 'int')"
+      icon="pi pi-clock">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Aprovação"
+      [value]="fmt((metrics.approvedRequests / metrics.totalRequests) * 100, 'percent', 1, 1)"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Tempo Médio de Processamento"
+      [value]="metrics.averageProcessingTime + ' dias'" icon="pi pi-stopwatch">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos',      value: '' },
+      { label: 'Pendentes',  value: 'pending' },
+      { label: 'Em Análise', value: 'under_review' },
+      { label: 'Aprovados',  value: 'approved' },
+      { label: 'Rejeitados', value: 'rejected' }
+    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event" searchPlaceholder="Buscar empresa ou CNPJ…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+
+
+  <div class="requests-table-card">
+    <div class="table-header">
+      <h3>Solicitações KYC ({{ totalItems }})</h3>
+    </div>
+
+    <div class="table-container">
+      <table class="requests-table">
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>ID CUSTOMER</th>
+            <th>CUSTOMER NAME</th>
+            <th>CUSTOMER ADDRESS</th>
+            <th>DATE</th>
+            <th>TYPE</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of paginatedRequests; let i = index">
+            <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+            <td>#{{ request.id.padStart(6, '0') }}</td>
+            <td>
+              <div class="company-info">
+                <strong>{{ request.companyName }}</strong>
+              </div>
+            </td>
+            <td>{{ request.companyDocument }}</td>
+            <td>{{ formatDate(request.requestDate) }}</td>
+            <td>KYC</td>
+            <td>
+              <span [class]="'status-badge ' + getStatusClass(request.status)">
+                {{ getStatusLabel(request.status) }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-view" (click)="viewRequest(request)" title="Ver detalhes">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="340px">
+    <h3 header>Filtros KYC</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Nome da Empresa</span>
+        <input type="text" [(ngModel)]="filters.companyName" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status da Solicitação</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="under_review">Em Análise</option>
+          <option value="approved">Aprovado</option>
+          <option value="rejected">Rejeitado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Prioridade</span>
+        <select [(ngModel)]="filters.priority" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="low">Baixa</option>
+          <option value="medium">Média</option>
+          <option value="high">Alta</option>
+          <option value="urgent">Urgente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Responsável</span>
+        <input type="text" [(ngModel)]="filters.assignedTo" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="daily">Hoje</option>
+          <option value="weekly">Últimos 7 dias</option>
+          <option value="monthly">Este mês</option>
+          <option value="quarterly">Este trimestre</option>
+          <option value="yearly">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Tipo de Documento</span>
+        <select [(ngModel)]="filters.documentType" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="cnpj">CNPJ</option>
+          <option value="cpf">CPF</option>
+          <option value="passport">Passaporte</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Região</span>
+        <input type="text" [(ngModel)]="filters.region" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data de solicitação (início)</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data de solicitação (fim)</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="requestDialogVisible" title="Detalhes da Solicitação KYC" [actions]="[
+      {id:'approve', label:'Aprovar', type:'primary'},
+      {id:'reject', label:'Rejeitar', type:'text'},
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleDialogAction($event)" width="800px" maxHeight="90vh">
+
+    <div *ngIf="selectedRequest" class="request-details">
+      <div class="detail-section">
+        <h4>Informações da Empresa</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Nome:</label>
+            <span>{{ selectedRequest.companyName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>CNPJ:</label>
+            <span>{{ selectedRequest.companyDocument }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Status:</label>
+            <span [class]="'status-badge ' + getStatusClass(selectedRequest.status)">
+              {{ getStatusLabel(selectedRequest.status) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <label>Prioridade:</label>
+            <span [class]="'priority-badge ' + getPriorityClass(selectedRequest.priority)">
+              {{ getPriorityLabel(selectedRequest.priority) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <label>Responsável:</label>
+            <span>{{ selectedRequest.assignedTo }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Data da Solicitação:</label>
+            <span>{{ formatDate(selectedRequest.requestDate) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section" *ngIf="selectedRequest.notes">
+        <h4>Observações</h4>
+        <p>{{ selectedRequest.notes }}</p>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>
