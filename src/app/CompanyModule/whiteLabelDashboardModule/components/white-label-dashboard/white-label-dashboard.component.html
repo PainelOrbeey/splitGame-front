@@ -1,0 +1,189 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Dashboard White Label</h2>
+    <app-user-menu [username]="'Admin White Label'" [email]="'admin@whitelabel.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="wallet-overview-section">
+    <div class="wallet-balance-card">
+      <div class="wallet-content">
+        <div class="balance-info">
+          <div class="balance-value">{{ partnerBalance.balance }}</div>
+          <div class="balance-label">Receita Total de Parceiros</div>
+          <div class="balance-change" [class]="partnerBalance.changeType">
+            {{ partnerBalance.change }} {{ partnerBalance.period }}
+          </div>
+        </div>
+        <div class="wallet-actions">
+          <button class="change-btn">
+            <i class="pi pi-chart-line"></i>
+            <span>Relatório</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-overview">
+      <div class="overview-header">
+        <h3>Distribuição por Segmento</h3>
+        <p>Parceiros ativos por categoria de negócio</p>
+      </div>
+
+      <div class="overview-content">
+        <div class="overview-list">
+          <div *ngFor="let item of brandOverviewItems" class="overview-item">
+            <div class="item-indicator" [style.background-color]="item.color"></div>
+            <div class="item-info">
+              <span class="item-label">{{ item.label }}</span>
+              <span class="item-percentage">{{ item.percentage }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="overview-chart">
+          <canvas #overviewChart></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card partners-card">
+      <div class="metric-header">
+        <h3>{{ metricCards[0].title }}</h3>
+        <div class="dropdown-trigger">
+          <span>ÚLTIMO MÊS</span>
+          <i class="pi pi-chevron-down"></i>
+        </div>
+      </div>
+      <div class="metric-value">{{ metricCards[0].value }}</div>
+      <div class="chart-container">
+        <canvas #partnersChart></canvas>
+      </div>
+    </div>
+
+    <div *ngFor="let card of metricCards.slice(1)" class="metric-card">
+      <div class="metric-header">
+        <h3>{{ card.title }}</h3>
+      </div>
+      <div class="metric-content">
+        <div class="metric-info">
+          <div class="metric-value">{{ card.value }}</div>
+          <div class="metric-change" [class]="card.changeType">
+            {{ card.change }} <span class="period">{{ card.period }}</span>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <canvas #miniChart
+            (ngAfterViewInit)="createMiniChart(miniChart, card.chartData, card.chartType, card.changeType === 'positive' ? '#00c896' : '#ff3b30')">
+          </canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-section">
+    <div class="chart-card funnel-card">
+      <div class="chart-header">
+        <h3>Funil de Parceiros</h3>
+        <i class="pi pi-ellipsis-h"></i>
+      </div>
+
+      <div class="funnel-metrics">
+        <div *ngFor="let item of partnerFunnelItems" class="funnel-item">
+          <div class="funnel-icon" [style.background-color]="item.color">
+            <i [class]="item.icon"></i>
+          </div>
+          <div class="funnel-info">
+            <span class="funnel-label">{{ item.label }}</span>
+            <span class="funnel-value">{{ item.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="funnel-chart">
+        <canvas #funnelChart></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card category-card">
+      <div class="chart-header">
+        <h3>Marcas por Categoria</h3>
+        <div class="dropdown-trigger">
+          <span>ÚLTIMO MÊS</span>
+          <i class="pi pi-chevron-down"></i>
+        </div>
+      </div>
+
+      <div class="category-content">
+        <div class="category-list">
+          <div *ngFor="let category of brandCategoryItems" class="category-item">
+            <div class="category-info">
+              <div class="category-dot"></div>
+              <div class="category-details">
+                <span class="category-name">{{ category.name }} ({{ category.percentage }}%)</span>
+                <span class="category-products">{{ category.partners }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="category-chart">
+          <canvas #brandChart></canvas>
+          <div class="chart-center">
+            <span class="total-value">342</span>
+            <span class="total-label">Marcas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-header">
+      <h3>Parceiros Recentes</h3>
+      <div class="table-actions">
+        <button class="filter-btn">
+          <i class="pi pi-filter"></i>
+          Filtrar e Ordenar
+        </button>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <table class="partners-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>NOME DO PARCEIRO</th>
+            <th>MARCA</th>
+            <th>DATA DE ADESÃO</th>
+            <th>STATUS</th>
+            <th>RECEITA</th>
+            <th>CUSTOMIZAÇÕES</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let partner of recentPartners">
+            <td>{{ partner.id }}</td>
+            <td>{{ partner.partnerName }}</td>
+            <td>
+              <span class="brand-name">{{ partner.brandName }}</span>
+            </td>
+            <td>{{ partner.joinDate }}</td>
+            <td>
+              <span [class]="'status-badge ' + getStatusClass(partner.status)">
+                {{ getStatusLabel(partner.status) }}
+              </span>
+            </td>
+            <td class="revenue-cell">{{ partner.revenue }}</td>
+            <td>
+              <span class="customizations-count">{{ partner.customizations }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

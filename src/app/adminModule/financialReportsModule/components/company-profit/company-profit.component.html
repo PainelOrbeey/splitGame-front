@@ -1,0 +1,193 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Lucro por Empresa</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Empresas" [value]="fmt(metrics.totalCompanies, 'int')"
+      icon="pi pi-building"></app-summary-card>
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      icon="pi pi-dollar"></app-summary-card>
+    <app-summary-card class="width-max" title="Lucro Total" [value]="fmt(metrics.totalProfit, 'currency')"
+      icon="pi pi-chart-line"></app-summary-card>
+    <app-summary-card class="width-max" title="Margem Média" [value]="fmt(metrics.averageMargin, 'percent', 2, 2)"
+      icon="pi pi-percentage"></app-summary-card>
+    <app-summary-card class="width-max" title="Empresas Lucrativas" [value]="fmt(metrics.profitableCompanies, 'int')"
+      icon="pi pi-check-circle"></app-summary-card>
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageTicket, 'currency')"
+      icon="pi pi-shopping-cart"></app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todas',     value: '' },
+        { label: 'Ativas',    value: 'active' },
+        { label: 'Inativas',  value: 'inactive' },
+        { label: 'Suspensas', value: 'suspended' }
+      ]" [selected]="filters.status" (selectedChange)="setProfitStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>CNPJ</th>
+            <th>Receita</th>
+            <th>Custos</th>
+            <th>Lucro Bruto</th>
+            <th>Lucro Líquido</th>
+            <th>Margem</th>
+            <th>Transações</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let profit of getPaginatedData()">
+            <td>
+              <div class="company-info">
+                <div>
+                  <div class="name">{{ profit.companyName }}</div>
+                  <div class="period">{{ profit.period }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ profit.cnpj }}</td>
+            <td>{{ fmt(profit.totalRevenue, 'currency') }}</td>
+            <td>{{ fmt(profit.totalCosts, 'currency') }}</td>
+            <td>{{ fmt(profit.grossProfit, 'currency') }}</td>
+            <td>{{ fmt(profit.netProfit, 'currency') }}</td>
+            <td>{{ fmt(profit.profitMargin, 'percent', 2, 2) }}</td>
+            <td>{{ fmt(profit.transactionCount, 'int') }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(profit.status)">
+                {{ getStatusLabel(profit.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(profit)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Lucro</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Empresa/CNPJ</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="active">Ativa</option>
+          <option value="inactive">Inativa</option>
+          <option value="suspended">Suspensa</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="daily">Diário</option>
+          <option value="weekly">Semanal</option>
+          <option value="monthly">Mensal</option>
+          <option value="quarterly">Trimestral</option>
+          <option value="yearly">Anual</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Lucro mínimo</span>
+        <input type="number" [(ngModel)]="filters.minProfit" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Lucro máximo</span>
+        <input type="number" [(ngModel)]="filters.maxProfit" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Margem mínima (%)</span>
+        <input type="number" [(ngModel)]="filters.minMargin" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Margem máxima (%)</span>
+        <input type="number" [(ngModel)]="filters.maxMargin" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Segmento</span>
+        <select [(ngModel)]="filters.segment" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="technology">Tecnologia</option>
+          <option value="retail">Varejo</option>
+          <option value="services">Serviços</option>
+          <option value="manufacturing">Indústria</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Região</span>
+        <input type="text" [(ngModel)]="filters.region" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Lucro" [width]="'600px'" *ngIf="selectedProfit">
+    <div class="details-grid">
+      <p><strong>Empresa:</strong> {{ selectedProfit.companyName }}</p>
+      <p><strong>CNPJ:</strong> {{ selectedProfit.cnpj }}</p>
+      <p><strong>Período:</strong> {{ selectedProfit.period }}</p>
+      <p><strong>Status:</strong> {{ getStatusLabel(selectedProfit.status) }}</p>
+      <p><strong>Receita Total:</strong> {{ fmt(selectedProfit.totalRevenue, 'currency') }}</p>
+      <p><strong>Custos Totais:</strong> {{ fmt(selectedProfit.totalCosts, 'currency') }}</p>
+      <p><strong>Lucro Bruto:</strong> {{ fmt(selectedProfit.grossProfit, 'currency') }}</p>
+      <p><strong>Lucro Líquido:</strong> {{ fmt(selectedProfit.netProfit, 'currency') }}</p>
+      <p><strong>Margem de Lucro:</strong> {{ fmt(selectedProfit.profitMargin, 'percent', 2, 2) }}</p>
+      <p><strong>Total de Transações:</strong> {{ fmt(selectedProfit.transactionCount, 'int') }}</p>
+      <p><strong>Ticket Médio:</strong> {{ fmt(selectedProfit.averageTicket, 'currency') }}</p>
+      <p><strong>Criado em:</strong> {{ selectedProfit.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>Atualizado em:</strong> {{ selectedProfit.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+  </app-custom-dialog>
+</section>

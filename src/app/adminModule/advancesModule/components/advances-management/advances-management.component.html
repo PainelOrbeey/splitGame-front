@@ -1,0 +1,367 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Todas as Antecipações</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="metrics-grid">
+    <app-summary-card class="width-max" title="Total de Antecipações" [value]="fmt(metrics.totalAdvances, 'int')"
+      icon="pi pi-file-o" delta="+8.2%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Volume Total" [value]="fmt(metrics.totalVolume, 'currency', 0, 0)"
+      icon="pi pi-dollar" delta="+15.3%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Aprovação" [value]="fmt(metrics.approvalRate, 'percent', 1, 1)"
+      icon="pi pi-check-circle" delta="+2.1%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Valor Médio" [value]="fmt(metrics.averageAmount, 'currency', 0, 0)"
+      icon="pi pi-chart-line" delta="-3.5%" deltaType="down">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total em Taxas" [value]="fmt(metrics.totalFees, 'currency', 0, 0)"
+      icon="pi pi-percentage" delta="+12.8%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Tempo Médio de Análise"
+      [value]="fmt(metrics.averageProcessingTime, 'int', 1, 1) + ' dias'" icon="pi pi-clock" delta="-0.5 dias"
+      deltaType="up">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todas',        value: '' },
+        { label: 'Pendentes',    value: 'pending' },
+        { label: 'Em Análise',   value: 'analyzing' },
+        { label: 'Aprovadas',    value: 'approved' },
+        { label: 'Rejeitadas',   value: 'rejected' },
+        { label: 'Pagas',        value: 'paid' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar antecipação ou empresa…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="advances-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Empresa</th>
+            <th>Valor Solicitado</th>
+            <th>Valor Aprovado</th>
+            <th>Taxa</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Data Solicitação</th>
+            <th>Score de Risco</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let advance of paginatedAdvances">
+            <td>{{ advance.id }}</td>
+            <td>
+              <div class="company-info">
+                <span class="name">{{ advance.companyName }}</span>
+                <small class="id">{{ advance.companyId }}</small>
+              </div>
+            </td>
+            <td>{{ fmt(advance.requestedAmount, 'currency', 0, 0) }}</td>
+            <td>{{ advance.approvedAmount > 0 ? fmt(advance.approvedAmount, 'currency', 0, 0) : '-' }}</td>
+            <td>{{ advance.discountRate > 0 ? fmt(advance.discountRate, 'percent', 1, 1) : '-' }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(advance.status)">
+                {{ getStatusLabel(advance.status) }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getPriorityClass(advance.priority)">
+                {{ getPriorityLabel(advance.priority) }}
+              </span>
+            </td>
+            <td>{{ advance.requestDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="risk-score"
+                [ngClass]="advance.riskScore >= 70 ? 'good' : advance.riskScore >= 50 ? 'medium' : 'low'">
+                {{ advance.riskScore }}
+              </div>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(advance)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Antecipações</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">ID/Empresa</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="analyzing">Em Análise</option>
+          <option value="approved">Aprovada</option>
+          <option value="rejected">Rejeitada</option>
+          <option value="paid">Paga</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Prioridade</span>
+        <select [(ngModel)]="filters.priority" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="low">Baixa</option>
+          <option value="normal">Normal</option>
+          <option value="high">Alta</option>
+          <option value="urgent">Urgente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pix">PIX</option>
+          <option value="ted">TED</option>
+          <option value="transfer">Transferência</option>
+          <option value="check">Cheque</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Score de risco mín.</span>
+        <input type="number" [(ngModel)]="filters.minRiskScore" min="0" max="100" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Score de risco máx.</span>
+        <input type="number" [(ngModel)]="filters.maxRiskScore" min="0" max="100" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Aprovado por</span>
+        <input type="text" [(ngModel)]="filters.approvedBy" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes da Antecipação" [width]="'800px'">
+
+    <div *ngIf="selectedAdvance" class="advance-details">
+      <div class="details-grid">
+        <div class="detail-section">
+          <h4>Informações Gerais</h4>
+          <div class="detail-row">
+            <span class="label">ID:</span>
+            <span class="value">{{ selectedAdvance.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Empresa:</span>
+            <span class="value">{{ selectedAdvance.companyName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="tag" [ngClass]="getStatusClass(selectedAdvance.status)">
+              {{ getStatusLabel(selectedAdvance.status) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Prioridade:</span>
+            <span class="tag" [ngClass]="getPriorityClass(selectedAdvance.priority)">
+              {{ getPriorityLabel(selectedAdvance.priority) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Valores</h4>
+          <div class="detail-row">
+            <span class="label">Valor Solicitado:</span>
+            <span class="value">{{ fmt(selectedAdvance.requestedAmount, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Valor Aprovado:</span>
+            <span class="value">{{ selectedAdvance.approvedAmount > 0 ? fmt(selectedAdvance.approvedAmount, 'currency')
+              : '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Taxa de Desconto:</span>
+            <span class="value">{{ selectedAdvance.discountRate > 0 ? fmt(selectedAdvance.discountRate, 'percent', 2, 2)
+              : '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Valor Líquido:</span>
+            <span class="value">{{ selectedAdvance.netAmount > 0 ? fmt(selectedAdvance.netAmount, 'currency') : '-'
+              }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Datas</h4>
+          <div class="detail-row">
+            <span class="label">Data da Solicitação:</span>
+            <span class="value">{{ selectedAdvance.requestDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.approvalDate">
+            <span class="label">Data da Aprovação:</span>
+            <span class="value">{{ selectedAdvance.approvalDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.paymentDate">
+            <span class="label">Data do Pagamento:</span>
+            <span class="value">{{ selectedAdvance.paymentDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Data de Vencimento:</span>
+            <span class="value">{{ selectedAdvance.dueDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Pagamento</h4>
+          <div class="detail-row">
+            <span class="label">Método:</span>
+            <span class="value">{{ getPaymentMethodLabel(selectedAdvance.paymentMethod) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.pixKey">
+            <span class="label">Chave PIX:</span>
+            <span class="value">{{ selectedAdvance.pixKey }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.bankAccount">
+            <span class="label">Banco:</span>
+            <span class="value">{{ selectedAdvance.bankAccount.bank }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.bankAccount">
+            <span class="label">Agência/Conta:</span>
+            <span class="value">{{ selectedAdvance.bankAccount.agency }} / {{ selectedAdvance.bankAccount.account
+              }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Taxas e Custos</h4>
+          <div class="detail-row">
+            <span class="label">Taxa de Processamento:</span>
+            <span class="value">{{ fmt(selectedAdvance.fees.processingFee, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Taxa de Juros:</span>
+            <span class="value">{{ fmt(selectedAdvance.fees.interestRate, 'percent', 2, 2) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total de Taxas:</span>
+            <span class="value">{{ fmt(selectedAdvance.fees.totalFees, 'currency') }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Recebíveis</h4>
+          <div class="detail-row">
+            <span class="label">Valor Total:</span>
+            <span class="value">{{ fmt(selectedAdvance.receivables.totalValue, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Quantidade:</span>
+            <span class="value">{{ selectedAdvance.receivables.count }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Prazo Médio:</span>
+            <span class="value">{{ selectedAdvance.receivables.averageDays }} dias</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Score de Risco:</span>
+            <span class="value risk-score"
+              [ngClass]="selectedAdvance.riskScore >= 70 ? 'good' : selectedAdvance.riskScore >= 50 ? 'medium' : 'low'">
+              {{ selectedAdvance.riskScore }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width">
+          <h4>Observações</h4>
+          <div class="detail-row">
+            <span class="label">Motivo:</span>
+            <span class="value">{{ selectedAdvance.reason }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.analysisNotes">
+            <span class="label">Notas da Análise:</span>
+            <span class="value">{{ selectedAdvance.analysisNotes }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.rejectionReason">
+            <span class="label">Motivo da Rejeição:</span>
+            <span class="value">{{ selectedAdvance.rejectionReason }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedAdvance.approvedBy">
+            <span class="label">Aprovado por:</span>
+            <span class="value">{{ selectedAdvance.approvedBy }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

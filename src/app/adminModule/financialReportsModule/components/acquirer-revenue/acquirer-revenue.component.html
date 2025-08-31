@@ -1,0 +1,199 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Faturamento por Adquirente</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos',      value: '' },
+      { label: 'Ativos',     value: 'active' },
+      { label: 'Inativos',   value: 'inactive' },
+      { label: 'Manutenção', value: 'maintenance' }
+    ]" [selected]="filters.status" (selectedChange)="setRevenueStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar adquirente…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Adquirentes" [value]="fmt(metrics.totalAcquirers, 'int')"
+      icon="pi pi-credit-card"></app-summary-card>
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      icon="pi pi-dollar"></app-summary-card>
+    <app-summary-card class="width-max" title="Total de Transações" [value]="fmt(metrics.totalTransactions, 'int')"
+      icon="pi pi-shopping-cart"></app-summary-card>
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageTicket, 'currency')"
+      icon="pi pi-chart-bar"></app-summary-card>
+    <app-summary-card class="width-max" title="Total em Taxas" [value]="fmt(metrics.totalFees, 'currency')"
+      icon="pi pi-percentage"></app-summary-card>
+    <app-summary-card class="width-max" title="Market Share Médio"
+      [value]="fmt(metrics.averageMarketShare, 'percent', 1, 1)" icon="pi pi-chart-pie"></app-summary-card>
+  </div>
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Adquirente</th>
+            <th>Código</th>
+            <th>Receita</th>
+            <th>Transações</th>
+            <th>Ticket Médio</th>
+            <th>Taxas</th>
+            <th>Market Share</th>
+            <th>Métodos</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let revenue of getPaginatedData()">
+            <td>
+              <div class="acquirer-info">
+                <div>
+                  <div class="name">{{ revenue.acquirerName }}</div>
+                  <div class="period">{{ revenue.period }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{{ revenue.acquirerCode }}</td>
+            <td>{{ fmt(revenue.totalRevenue, 'currency') }}</td>
+            <td>{{ fmt(revenue.transactionCount, 'int') }}</td>
+            <td>{{ fmt(revenue.averageTicket, 'currency') }}</td>
+            <td>{{ fmt(revenue.feeRevenue, 'currency') }}</td>
+            <td>{{ fmt(revenue.marketShare, 'percent', 1, 1) }}</td>
+            <td>
+              <div class="payment-methods">
+                <span *ngFor="let method of revenue.paymentMethods" class="method-tag">
+                  {{ getPaymentMethodLabel(method) }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(revenue.status)">
+                {{ getStatusLabel(revenue.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(revenue)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Adquirente</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Adquirente</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="active">Ativo</option>
+          <option value="inactive">Inativo</option>
+          <option value="maintenance">Manutenção</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="daily">Diário</option>
+          <option value="weekly">Semanal</option>
+          <option value="monthly">Mensal</option>
+          <option value="quarterly">Trimestral</option>
+          <option value="yearly">Anual</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita mínima</span>
+        <input type="number" [(ngModel)]="filters.minRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita máxima</span>
+        <input type="number" [(ngModel)]="filters.maxRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Transações mín.</span>
+        <input type="number" [(ngModel)]="filters.minTransactions" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Transações máx.</span>
+        <input type="number" [(ngModel)]="filters.maxTransactions" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="credit">Crédito</option>
+          <option value="debit">Débito</option>
+          <option value="pix">PIX</option>
+          <option value="voucher">Voucher</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Adquirente" [width]="'600px'"
+    *ngIf="selectedRevenue">
+    <div class="details-grid">
+      <p><strong>Adquirente:</strong> {{ selectedRevenue.acquirerName }}</p>
+      <p><strong>Código:</strong> {{ selectedRevenue.acquirerCode }}</p>
+      <p><strong>Período:</strong> {{ selectedRevenue.period }}</p>
+      <p><strong>Status:</strong> {{ getStatusLabel(selectedRevenue.status) }}</p>
+      <p><strong>Receita Total:</strong> {{ fmt(selectedRevenue.totalRevenue, 'currency') }}</p>
+      <p><strong>Total de Transações:</strong> {{ fmt(selectedRevenue.transactionCount, 'int') }}</p>
+      <p><strong>Ticket Médio:</strong> {{ fmt(selectedRevenue.averageTicket, 'currency') }}</p>
+      <p><strong>Receita em Taxas:</strong> {{ fmt(selectedRevenue.feeRevenue, 'currency') }}</p>
+      <p><strong>Percentual de Taxa:</strong> {{ fmt(selectedRevenue.feePercentage, 'percent', 2, 2) }}</p>
+      <p><strong>Market Share:</strong> {{ fmt(selectedRevenue.marketShare, 'percent', 1, 1) }}</p>
+      <p><strong>Métodos de Pagamento:</strong>
+        <span *ngFor="let method of selectedRevenue.paymentMethods; let last = last">
+          {{ getPaymentMethodLabel(method) }}<span *ngIf="!last">, </span>
+        </span>
+      </p>
+      <p><strong>Criado em:</strong> {{ selectedRevenue.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>Atualizado em:</strong> {{ selectedRevenue.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+  </app-custom-dialog>
+</section>

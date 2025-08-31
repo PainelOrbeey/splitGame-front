@@ -1,0 +1,183 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Faturamento por Empresa</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      [delta]="'+' + fmt(metrics.growth, 'percent', 1, 1)" deltaType="up" icon="pi pi-building">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Empresas Ativas" [value]="fmt(activeCompaniesCount, 'int')"
+      [delta]="'+8%'" deltaType="up" icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(ticketMedio, 'currency')" [delta]="'+5.2%'"
+      deltaType="up" icon="pi pi-calculator">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total de Transações" [value]="fmt(totalTransacoes, 'int')"
+      [delta]="'+12%'" deltaType="up" icon="pi pi-chart-line">
+    </app-summary-card>
+
+  </div>
+  <app-filter-tabs [tabs]="[
+      { label: 'Todas',     value: '' },
+      { label: 'Ativas',    value: 'active' },
+      { label: 'Inativas',  value: 'inactive' },
+      { label: 'Suspensas', value: 'suspended' }
+    ]" [selected]="filters.status" (selectedChange)="setCompanyStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>CNPJ</th>
+            <th>Receita Total</th>
+            <th>Transações</th>
+            <th>Ticket Médio</th>
+            <th>Crescimento</th>
+            <th>Última Transação</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let company of paginatedCompanies">
+            <td><strong>{{ company.companyName }}</strong></td>
+            <td>{{ company.cnpj }}</td>
+            <td><strong>{{ fmt(company.totalRevenue, 'currency') }}</strong></td>
+            <td>{{ fmt(company.totalTransactions, 'int') }}</td>
+            <td>{{ fmt(company.averageTicket, 'currency') }}</td>
+            <td>
+              <span class="tag" [ngClass]="company.growth >= 0 ? 'success' : 'danger'">
+                {{ company.growth >= 0 ? '+' : '' }}{{ fmt(company.growth, 'percent', 1, 1) }}
+              </span>
+            </td>
+            <td>{{ company.lastTransaction | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(company.status)">
+                {{ getStatusLabel(company.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(company)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Empresa</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Nome/CNPJ</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="active">Ativa</option>
+          <option value="inactive">Inativa</option>
+          <option value="suspended">Suspensa</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita mínima</span>
+        <input type="number" [(ngModel)]="filters.minRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita máxima</span>
+        <input type="number" [(ngModel)]="filters.maxRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="dialogVisible" title="Detalhes da Empresa" [width]="'600px'">
+    <div *ngIf="selectedCompany" class="dialog-content">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <strong>Empresa:</strong>
+          <span>{{ selectedCompany.companyName }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>CNPJ:</strong>
+          <span>{{ selectedCompany.cnpj }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>ID da Empresa:</strong>
+          <span>{{ selectedCompany.companyId }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Receita Total:</strong>
+          <span>{{ fmt(selectedCompany.totalRevenue, 'currency') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Total de Transações:</strong>
+          <span>{{ fmt(selectedCompany.totalTransactions, 'int') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Ticket Médio:</strong>
+          <span>{{ fmt(selectedCompany.averageTicket, 'currency') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Crescimento:</strong>
+          <span class="tag" [ngClass]="selectedCompany.growth >= 0 ? 'success' : 'danger'">
+            {{ selectedCompany.growth >= 0 ? '+' : '' }}{{ fmt(selectedCompany.growth, 'percent', 1, 1) }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <strong>Última Transação:</strong>
+          <span>{{ selectedCompany.lastTransaction | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Status:</strong>
+          <span class="tag" [ngClass]="getStatusClass(selectedCompany.status)">
+            {{ getStatusLabel(selectedCompany.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

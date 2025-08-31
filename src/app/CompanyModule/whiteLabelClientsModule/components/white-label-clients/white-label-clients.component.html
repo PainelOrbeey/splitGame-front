@@ -1,0 +1,378 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Clientes White Label</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="metrics-grid">
+    <app-summary-card class="width-max" title="Total de Clientes" [value]="fmt(metrics.totalClients, 'int')"
+      icon="pi pi-users" delta="+{{metrics.newClientsThisMonth}} este mês" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Clientes Ativos" [value]="fmt(metrics.activeClients, 'int')"
+      icon="pi pi-user-check" delta="+5.2%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Volume Total" [value]="fmt(metrics.totalVolume, 'currency', 0, 0)"
+      icon="pi pi-chart-line" delta="+18.5%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageTicket, 'currency', 0, 0)"
+      icon="pi pi-receipt" delta="+5.2%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Conversão" [value]="fmt(metrics.conversionRate, 'percent', 1, 1)"
+      icon="pi pi-percentage" delta="+3.1%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Novos Clientes" [value]="fmt(metrics.newClientsThisMonth, 'int')"
+      icon="pi pi-user-plus" delta="+12.8%" deltaType="up">
+    </app-summary-card>
+  </div>
+
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos',        value: '' },
+        { label: 'Ativos',       value: 'ACTIVE' },
+        { label: 'Inativos',     value: 'INACTIVE' },
+        { label: 'Pendentes',    value: 'PENDING' },
+        { label: 'Bloqueados',   value: 'BLOCKED' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar cliente, parceiro ou marca…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Parceiro/Marca</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>KYC</th>
+            <th>Risco</th>
+            <th>Transações</th>
+            <th>Volume</th>
+            <th>Cadastro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of paginatedClients">
+            <td>{{ client.id }}</td>
+            <td>
+              <div class="client-info">
+                <span class="name">{{ client.clientName }}</span>
+                <small class="email">{{ client.clientEmail }}</small>
+                <small class="document">{{ formatDocument(client.clientDocument, client.clientType) }}</small>
+              </div>
+            </td>
+            <td>
+              <div class="partner-info">
+                <span class="name">{{ client.partnerName }}</span>
+                <small class="brand">{{ client.brandName }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="tag type-tag">{{ getTypeLabel(client.clientType) }}</span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(client.status)">
+                {{ getStatusLabel(client.status) }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getKycClass(client.kycStatus)">
+                {{ getKycLabel(client.kycStatus) }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getRiskClass(client.riskLevel)">
+                {{ getRiskLabel(client.riskLevel) }}
+              </span>
+            </td>
+            <td>{{ client.totalTransactions | number }}</td>
+            <td>{{ fmt(client.totalVolume, 'currency', 0, 0) }}</td>
+            <td>{{ client.registrationDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(client)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Clientes</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">ID/Cliente/Parceiro</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="ACTIVE">Ativo</option>
+          <option value="INACTIVE">Inativo</option>
+          <option value="PENDING">Pendente</option>
+          <option value="BLOCKED">Bloqueado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Tipo de Cliente</span>
+        <select [(ngModel)]="filters.clientType" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="INDIVIDUAL">Pessoa Física</option>
+          <option value="BUSINESS">Pessoa Jurídica</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Status KYC</span>
+        <select [(ngModel)]="filters.kycStatus" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="APPROVED">Aprovado</option>
+          <option value="PENDING">Pendente</option>
+          <option value="REJECTED">Rejeitado</option>
+          <option value="EXPIRED">Expirado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Nível de Risco</span>
+        <select [(ngModel)]="filters.riskLevel" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="LOW">Baixo</option>
+          <option value="MEDIUM">Médio</option>
+          <option value="HIGH">Alto</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Parceiro</span>
+        <input type="text" [(ngModel)]="filters.partnerName" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Marca</span>
+        <input type="text" [(ngModel)]="filters.brandName" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.preferredPaymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="PIX">PIX</option>
+          <option value="Cartão de Crédito">Cartão de Crédito</option>
+          <option value="Cartão de Débito">Cartão de Débito</option>
+          <option value="Boleto">Boleto</option>
+          <option value="Transferência">Transferência</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume mínimo</span>
+        <input type="number" [(ngModel)]="filters.minVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume máximo</span>
+        <input type="number" [(ngModel)]="filters.maxVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Cliente" [width]="'900px'">
+    <div *ngIf="selectedClient" class="client-details">
+      <div class="details-grid">
+        <div class="detail-section">
+          <h4>Informações Pessoais</h4>
+          <div class="detail-row">
+            <span class="label">ID:</span>
+            <span class="value">{{ selectedClient.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Nome:</span>
+            <span class="value">{{ selectedClient.clientName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email:</span>
+            <span class="value">{{ selectedClient.clientEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Telefone:</span>
+            <span class="value">{{ selectedClient.clientPhone }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Documento:</span>
+            <span class="value">{{ formatDocument(selectedClient.clientDocument, selectedClient.clientType) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Tipo:</span>
+            <span class="value">{{ getTypeLabel(selectedClient.clientType) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Informações Comerciais</h4>
+          <div class="detail-row">
+            <span class="label">Parceiro:</span>
+            <span class="value">{{ selectedClient.partnerName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Marca:</span>
+            <span class="value">{{ selectedClient.brandName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="tag" [ngClass]="getStatusClass(selectedClient.status)">
+              {{ getStatusLabel(selectedClient.status) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total de Transações:</span>
+            <span class="value">{{ selectedClient.totalTransactions | number }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Volume Total:</span>
+            <span class="value">{{ fmt(selectedClient.totalVolume, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Ticket Médio:</span>
+            <span class="value">{{ fmt(selectedClient.averageTicket, 'currency') }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Endereço</h4>
+          <div class="detail-row">
+            <span class="label">Logradouro:</span>
+            <span class="value">{{ selectedClient.address.street }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Cidade:</span>
+            <span class="value">{{ selectedClient.address.city }} - {{ selectedClient.address.state }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">CEP:</span>
+            <span class="value">{{ selectedClient.address.zipCode }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">País:</span>
+            <span class="value">{{ selectedClient.address.country }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Compliance e Risco</h4>
+          <div class="detail-row">
+            <span class="label">Status KYC:</span>
+            <span class="tag" [ngClass]="getKycClass(selectedClient.kycStatus)">
+              {{ getKycLabel(selectedClient.kycStatus) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Nível de Risco:</span>
+            <span class="tag" [ngClass]="getRiskClass(selectedClient.riskLevel)">
+              {{ getRiskLabel(selectedClient.riskLevel) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Método Preferido:</span>
+            <span class="value">{{ selectedClient.preferredPaymentMethod }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedClient.companyInfo">
+          <h4>Informações da Empresa</h4>
+          <div class="detail-row">
+            <span class="label">CNPJ:</span>
+            <span class="value">{{ selectedClient.companyInfo.cnpj }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Razão Social:</span>
+            <span class="value">{{ selectedClient.companyInfo.corporateName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Nome Fantasia:</span>
+            <span class="value">{{ selectedClient.companyInfo.tradeName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Tipo de Negócio:</span>
+            <span class="value">{{ selectedClient.companyInfo.businessType }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Datas</h4>
+          <div class="detail-row">
+            <span class="label">Cadastro:</span>
+            <span class="value">{{ selectedClient.registrationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Última Atividade:</span>
+            <span class="value">{{ selectedClient.lastActivity | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width" *ngIf="selectedClient.tags.length > 0">
+          <h4>Tags</h4>
+          <div class="tags-container">
+            <span class="tag-item" *ngFor="let tag of selectedClient.tags">{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

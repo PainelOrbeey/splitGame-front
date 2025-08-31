@@ -1,5 +1,5 @@
-import { Component, HostBinding } from "@angular/core"
-import { RouterModule } from "@angular/router"
+import { Component, HostBinding, OnInit, OnDestroy } from "@angular/core"
+import { Router, RouterModule } from "@angular/router"
 import { CommonModule } from "@angular/common"
 import { AvatarModule } from "primeng/avatar"
 import { RippleModule } from "primeng/ripple"
@@ -15,13 +15,13 @@ interface NavItem {
 }
 
 @Component({
-  selector: "app-admin-sidebar",
+  selector: "app-sidebar",
   standalone: true,
   templateUrl: "./admin-sidebar.component.html",
   styleUrls: ["./admin-sidebar.component.scss"],
   imports: [CommonModule, RouterModule, AvatarModule, RippleModule, BadgeModule],
 })
-export class AdminSidebarComponent {
+export class AdminSidebarComponent implements OnInit, OnDestroy {
   collapsed = false
 
   @HostBinding("class.overlay") overlay = false
@@ -29,53 +29,103 @@ export class AdminSidebarComponent {
     return this.collapsed
   }
 
-  menu: NavItem[] = [
+  menu: NavItem[] = []
+  footer: NavItem[] = []
+
+  private adminMenu: NavItem[] = [
     {
       label: "Dashboard",
       icon: "pi pi-chart-bar",
-      route: "/home/dashboard",
+      route: "/admin/dashboard",
     },
     {
       label: "Solicitações KYC",
       icon: "pi pi-user-plus",
-      route: "/home/kyc-requests",
+      route: "/admin/kyc-requests",
     },
     {
       label: "Todas as Empresas",
       icon: "pi pi-building",
-      route: "/home/all-companies",
+      route: "/admin/all-companies",
     },
     {
       label: "Todas as Transações",
       icon: "pi pi-credit-card",
-      route: "/home/all-transactions",
+      route: "/admin/all-transactions",
     },
     {
       label: "Todos os Saques",
       icon: "pi pi-money-bill",
-      route: "/admin/withdrawals",
+      route: "/admin/all-withdrawals",
     },
     {
       label: "Todas as Antecipações",
       icon: "pi pi-forward",
-      route: "/admin/advances",
+      route: "/admin/all-advances",
     },
     {
       label: "Relatórios Financeiros",
       icon: "pi pi-chart-line",
       expanded: false,
       children: [
-        { label: "Faturamento por Período", route: "/admin/billing-period" },
-        { label: "Faturamento por Empresa", route: "/admin/billing-company" },
+        { label: "Faturamento por Período", route: "/admin/company-period" },
+        { label: "Faturamento por Empresa", route: "/admin/company-revenue" },
         { label: "Lucro por Empresa", route: "/admin/profit-company" },
-        { label: "Faturamento por Adquirente", route: "/admin/billing-acquirer" },
+        { label: "Faturamento por Adquirente", route: "/admin/acquirer-revenue" },
       ],
     },
   ]
 
-  footer: NavItem[] = [
+  private userMenu: NavItem[] = [
+    {
+      label: "Dashboard",
+      icon: "pi pi-chart-bar",
+      route: "/company/dashboard",
+    },
+    {
+      label: "Minhas Transações",
+      icon: "pi pi-credit-card",
+      route: "/company/transactions",
+    },
+    {
+      label: "Meus Clientes",
+      icon: "pi pi-users",
+      route: "/company/clients",
+    }
+
+  ]
+
+  private adminFooter: NavItem[] = [
     { label: "Configurações", icon: "pi pi-cog", route: "/admin/settings" },
   ]
+
+  private userFooter: NavItem[] = [
+    { label: "Minha Conta", icon: "pi pi-user", route: "/company/account" },
+    { label: "Configurações", icon: "pi pi-cog", route: "/company/settings" },
+  ]
+
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    this.onResize()
+    window.addEventListener("resize", this.onResize)
+    this.setMenuByRoute()
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener("resize", this.onResize)
+  }
+
+  private setMenuByRoute(): void {
+    const currentUrl = this.router.url
+    if (currentUrl.startsWith("/admin")) {
+      this.menu = this.adminMenu
+      this.footer = this.adminFooter
+    } else if (currentUrl.startsWith("/company")) {
+      this.menu = this.userMenu
+      this.footer = this.userFooter
+    }
+  }
 
   handleLinkClick(item: NavItem) {
     if (this.collapsed) {
@@ -98,14 +148,5 @@ export class AdminSidebarComponent {
 
   onResize = () => {
     this.overlay = window.innerWidth < 768
-  }
-
-  ngOnInit() {
-    this.onResize()
-    window.addEventListener("resize", this.onResize)
-  }
-
-  ngOnDestroy() {
-    window.removeEventListener("resize", this.onResize)
   }
 }

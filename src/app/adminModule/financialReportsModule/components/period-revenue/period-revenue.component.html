@@ -1,0 +1,190 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Faturamento por Período</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      [delta]="'+' + fmt(metrics.growth, 'percent', 1, 1)" deltaType="up" icon="pi pi-dollar">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total de Transações" [value]="fmt(metrics.totalTransactions, 'int')"
+      [delta]="'+12%'" deltaType="up" icon="pi pi-chart-line">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageTicket, 'currency')"
+      [delta]="'+5.2%'" deltaType="up" icon="pi pi-calculator">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Margem de Lucro" [value]="fmt(metrics.profitMargin, 'percent', 1, 1)"
+      [delta]="'+2.1%'" deltaType="up" icon="pi pi-percentage">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos',       value: '' },
+        { label: 'Concluídos',  value: 'completed' },
+        { label: 'Processando', value: 'processing' },
+        { label: 'Ativos',      value: 'active' }
+      ]" [selected]="filters.status" (selectedChange)="setPeriodStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar período…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Data Início</th>
+            <th>Data Fim</th>
+            <th>Receita Total</th>
+            <th>Transações</th>
+            <th>Ticket Médio</th>
+            <th>Crescimento</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let period of paginatedPeriods">
+            <td><strong>{{ period.period }}</strong></td>
+            <td>{{ period.startDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ period.endDate | date:'dd/MM/yyyy' }}</td>
+            <td><strong>{{ fmt(period.totalRevenue, 'currency') }}</strong></td>
+            <td>{{ fmt(period.totalTransactions, 'int') }}</td>
+            <td>{{ fmt(period.averageTicket, 'currency') }}</td>
+            <td>
+              <span class="tag" [ngClass]="period.growth >= 0 ? 'success' : 'danger'">
+                {{ period.growth >= 0 ? '+' : '' }}{{ fmt(period.growth, 'percent', 1, 1) }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(period.status)">
+                {{ getStatusLabel(period.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(period)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Período</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Período</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="completed">Concluído</option>
+          <option value="processing">Processando</option>
+          <option value="active">Ativo</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Tipo de Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="daily">Diário</option>
+          <option value="weekly">Semanal</option>
+          <option value="monthly">Mensal</option>
+          <option value="quarterly">Trimestral</option>
+          <option value="yearly">Anual</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita mínima</span>
+        <input type="number" [(ngModel)]="filters.minRevenue" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Receita máxima</span>
+        <input type="number" [(ngModel)]="filters.maxRevenue" (input)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="dialogVisible" title="Detalhes do Período" [width]="'600px'">
+    <div *ngIf="selectedPeriod" class="dialog-content">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <strong>Período:</strong>
+          <span>{{ selectedPeriod.period }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Data Início:</strong>
+          <span>{{ selectedPeriod.startDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Data Fim:</strong>
+          <span>{{ selectedPeriod.endDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Receita Total:</strong>
+          <span>{{ fmt(selectedPeriod.totalRevenue, 'currency') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Total de Transações:</strong>
+          <span>{{ fmt(selectedPeriod.totalTransactions, 'int') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Ticket Médio:</strong>
+          <span>{{ fmt(selectedPeriod.averageTicket, 'currency') }}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Crescimento:</strong>
+          <span class="tag" [ngClass]="selectedPeriod.growth >= 0 ? 'success' : 'danger'">
+            {{ selectedPeriod.growth >= 0 ? '+' : '' }}{{ fmt(selectedPeriod.growth, 'percent', 1, 1) }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <strong>Status:</strong>
+          <span class="tag" [ngClass]="getStatusClass(selectedPeriod.status)">
+            {{ getStatusLabel(selectedPeriod.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

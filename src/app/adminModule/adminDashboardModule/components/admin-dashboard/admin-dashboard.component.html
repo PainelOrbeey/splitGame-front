@@ -5,14 +5,14 @@
     </app-user-menu>
   </header>
 
-  <!-- Metrics Cards Grid -->
+
+
   <div class="metrics-grid">
-    <!-- Total Sales Card with Bar Chart -->
     <div class="metric-card sales-card">
       <div class="metric-header">
         <h3>{{ metricCards[0].title }}</h3>
         <div class="dropdown-trigger">
-          <span>LAST WEEK</span>
+          <span>ÚLTIMA SEMANA</span>
           <i class="pi pi-chevron-down"></i>
         </div>
       </div>
@@ -22,7 +22,6 @@
       </div>
     </div>
 
-    <!-- Other Metric Cards -->
     <div *ngFor="let card of metricCards.slice(1)" class="metric-card">
       <div class="metric-header">
         <h3>{{ card.title }}</h3>
@@ -42,13 +41,52 @@
       </div>
     </div>
   </div>
+  <div class="wallet-overview-section">
+    <div class="wallet-balance-card">
+      <div class="wallet-content">
+        <div class="balance-info">
+          <div class="balance-value">{{ walletBalance.balance }}</div>
+          <div class="balance-label">Saldo da Carteira</div>
+          <div class="balance-change" [class]="walletBalance.changeType">
+            {{ walletBalance.change }} {{ walletBalance.period }}
+          </div>
+        </div>
+        <div class="wallet-actions">
+          <button class="change-btn">
+            <i class="pi pi-refresh"></i>
+            <span>Alterar</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-  <!-- Charts Section -->
+    <div class="card-overview">
+      <div class="overview-header">
+        <h3>Visão Geral dos Cartões</h3>
+        <p>Distribuição por categoria de gastos</p>
+      </div>
+
+      <div class="overview-content">
+        <div class="overview-list">
+          <div *ngFor="let item of cardOverviewItems" class="overview-item">
+            <div class="item-indicator" [style.background-color]="item.color"></div>
+            <div class="item-info">
+              <span class="item-label">{{ item.label }}</span>
+              <span class="item-percentage">{{ item.percentage }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="overview-chart">
+          <canvas #overviewChart></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="charts-section">
-    <!-- Sales Funnel -->
     <div class="chart-card funnel-card">
       <div class="chart-header">
-        <h3>Sales Funnel</h3>
+        <h3>Funil de Vendas</h3>
         <i class="pi pi-ellipsis-h"></i>
       </div>
 
@@ -69,12 +107,11 @@
       </div>
     </div>
 
-    <!-- Sales by Category -->
     <div class="chart-card category-card">
       <div class="chart-header">
-        <h3>Sales by Category</h3>
+        <h3>Vendas por Categoria</h3>
         <div class="dropdown-trigger">
-          <span>LAST WEEK</span>
+          <span>ÚLTIMA SEMANA</span>
           <i class="pi pi-chevron-down"></i>
         </div>
       </div>
@@ -95,21 +132,20 @@
         <div class="category-chart">
           <canvas #categoryChart></canvas>
           <div class="chart-center">
-            <span class="total-value">$6.8K</span>
+            <span class="total-value">R$ 6,8K</span>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Invoices Table -->
   <div class="table-section">
     <div class="table-header">
-      <h3>Vendas recentes</h3>
+      <h3>Faturas Recentes</h3>
       <div class="table-actions">
         <button class="filter-btn">
           <i class="pi pi-filter"></i>
-          Filter & Sort
+          Filtrar e Ordenar
         </button>
       </div>
     </div>
@@ -118,14 +154,14 @@
       <table class="invoices-table">
         <thead>
           <tr>
-            <th>NO</th>
-            <th>ID CUSTOMER</th>
-            <th>CUSTOMER NAME</th>
-            <th>CUSTOMER ADDRESS</th>
-            <th>DATE</th>
-            <th>TYPE</th>
+            <th>Nº</th>
+            <th>ID CLIENTE</th>
+            <th>NOME DO CLIENTE</th>
+            <th>ENDEREÇO DO CLIENTE</th>
+            <th>DATA</th>
+            <th>TIPO</th>
             <th>STATUS</th>
-            <th>AMOUNT</th>
+            <th>VALOR</th>
           </tr>
         </thead>
         <tbody>
@@ -138,7 +174,8 @@
             <td>{{ invoice.type }}</td>
             <td>
               <span [class]="'status-badge ' + getStatusClass(invoice.status)">
-                {{ invoice.status }}
+                {{ invoice.status === 'completed' ? 'Concluído' : invoice.status === 'pending' ? 'Pendente' :
+                'Falhou' }}
               </span>
             </td>
             <td>{{ invoice.amount }}</td>

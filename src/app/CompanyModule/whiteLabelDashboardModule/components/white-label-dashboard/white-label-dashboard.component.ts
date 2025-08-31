@@ -2,6 +2,11 @@ import { Component, type OnInit, ViewChild, type ElementRef, type AfterViewInit 
 import { CommonModule } from "@angular/common"
 import { RouterModule } from "@angular/router"
 import { Chart, type ChartType, registerables } from "chart.js"
+import { FormsModule } from "@angular/forms"
+import { CustomDialogComponent } from "../../../../../shared/components/custom-dialog/custom-dialog.component"
+import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component"
+import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component"
+import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
 import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
 
 Chart.register(...registerables)
@@ -16,168 +21,164 @@ interface MetricCard {
   chartData: number[]
 }
 
-interface WalletBalance {
+interface PartnerBalance {
   balance: string
   change: string
   changeType: "positive" | "negative"
   period: string
 }
 
-interface CardOverviewItem {
+interface BrandOverviewItem {
   label: string
   percentage: number
   color: string
 }
 
-interface SalesFunnelItem {
+interface PartnerFunnelItem {
   label: string
   value: string
   color: string
   icon: string
 }
 
-interface CategoryItem {
+interface BrandCategoryItem {
   name: string
   percentage: number
-  products: string
+  partners: string
 }
 
-interface Invoice {
-  no: string
-  idCustomer: string
-  customerName: string
-  customerAddress: string
-  date: string
-  type: string
-  status: "completed" | "pending" | "failed"
-  amount: string
+interface RecentPartner {
+  id: string
+  partnerName: string
+  brandName: string
+  joinDate: string
+  status: "active" | "pending" | "inactive"
+  revenue: string
+  customizations: number
 }
 
 @Component({
-  selector: "app-admin-dashboard",
+  selector: "app-white-label-dashboard",
   standalone: true,
-  imports: [CommonModule, RouterModule,UserMenuComponent],
-  templateUrl: "./admin-dashboard.component.html",
-  styleUrls: ["./admin-dashboard.component.scss"],
+  imports: [CommonModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
+  templateUrl: "./white-label-dashboard.component.html",
+  styleUrls: ["./white-label-dashboard.component.scss"],
 })
-export class AdminDashboardComponent implements OnInit, AfterViewInit {
-  @ViewChild("salesChart", { static: false }) salesChartRef!: ElementRef<HTMLCanvasElement>
+export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
+  @ViewChild("partnersChart", { static: false }) partnersChartRef!: ElementRef<HTMLCanvasElement>
   @ViewChild("funnelChart", { static: false }) funnelChartRef!: ElementRef<HTMLCanvasElement>
-  @ViewChild("categoryChart", { static: false }) categoryChartRef!: ElementRef<HTMLCanvasElement>
+  @ViewChild("brandChart", { static: false }) brandChartRef!: ElementRef<HTMLCanvasElement>
   @ViewChild("overviewChart", { static: false }) overviewChartRef!: ElementRef<HTMLCanvasElement>
 
-  walletBalance: WalletBalance = {
-    balance: "R$ 824.571,93",
-    change: "+0,8%",
+  partnerBalance: PartnerBalance = {
+    balance: "R$ 1.245.890,50",
+    change: "+15,2%",
     changeType: "positive",
-    period: "que na semana passada",
+    period: "que no mês passado",
   }
 
-  cardOverviewItems: CardOverviewItem[] = [
-    { label: "Pix", percentage: 20, color: "#0048ff" },
-    { label: "boleto", percentage: 40, color: "#00c896" },
-    { label: "Cartão de Crédito", percentage: 15, color: "#ff9500" },
+  brandOverviewItems: BrandOverviewItem[] = [
+    { label: "Tecnologia", percentage: 35, color: "#0048ff" },
+    { label: "E-commerce", percentage: 28, color: "#00c896" },
+    { label: "Educação", percentage: 22, color: "#ff9500" },
+    { label: "Outros", percentage: 15, color: "#e5e7eb" },
   ]
 
   metricCards: MetricCard[] = [
     {
-      title: "Vendas Totais",
-      value: "R$ 360,00",
-      change: "+12%",
+      title: "Parceiros Totais",
+      value: "1.248",
+      change: "+18%",
       changeType: "positive",
-      period: "vs anterior, 28 dias",
+      period: "vs anterior, 30 dias",
       chartType: "bar",
-      chartData: [20, 35, 25, 40, 30, 45, 100, 35, 25, 30, 20, 15, 25, 30],
+      chartData: [45, 52, 38, 65, 49, 75, 120, 68, 55, 62, 48, 35, 58, 72],
     },
     {
-      title: "PIX",
-      value: "R$ 4.562",
+      title: "Receita White Label",
+      value: "R$ 89.450",
+      change: "+24%",
+      changeType: "positive",
+      period: "vs anterior, 30 dias",
+      chartType: "line",
+      chartData: [65, 72, 68, 75, 82, 88, 95, 102],
+    },
+    {
+      title: "Marcas Ativas",
+      value: "342",
       change: "+12%",
       changeType: "positive",
-      period: "vs anterior, 28 dias",
+      period: "vs anterior, 30 dias",
       chartType: "line",
-      chartData: [30, 35, 40, 45, 50, 55, 60, 65],
+      chartData: [28, 35, 42, 48, 55, 62, 68, 75],
     },
     {
-      title: "Total de Vendas",
-      value: "R$ 2.562",
-      change: "+4%",
+      title: "Customizações",
+      value: "1.856",
+      change: "+8%",
       changeType: "positive",
-      period: "vs anterior, 28 dias",
+      period: "vs anterior, 30 dias",
       chartType: "line",
-      chartData: [25, 30, 35, 40, 45, 50, 55, 60],
+      chartData: [85, 92, 88, 95, 102, 98, 105, 112],
     },
     {
-      title: "Cartão de Crédito",
-      value: "R$ 2.262",
-      change: "-0,89%",
+      title: "Taxa de Conversão",
+      value: "68,5%",
+      change: "-2,1%",
       changeType: "negative",
-      period: "vs anterior, 28 dias",
+      period: "vs anterior, 30 dias",
       chartType: "line",
-      chartData: [50, 45, 40, 35, 30, 25, 20, 15],
-    },
-    {
-      title: "Boleto",
-      value: "R$ 2.100",
-      change: "+2%",
-      changeType: "positive",
-      period: "vs anterior, 28 dias",
-      chartType: "line",
-      chartData: [20, 25, 30, 35, 40, 45, 50, 55],
+      chartData: [75, 72, 68, 65, 62, 58, 55, 52],
     },
   ]
 
-  salesFunnelItems: SalesFunnelItem[] = [
-    { label: "Mercado Total", value: "R$ 4.562", color: "#0048ff", icon: "pi pi-chart-bar" },
-    { label: "Prospects", value: "R$ 2.562", color: "#ff9500", icon: "pi pi-users" },
-    { label: "Leads", value: "R$ 1.262", color: "#ff3b30", icon: "pi pi-target" },
-    { label: "Vendas", value: "R$ 1.000", color: "#00c896", icon: "pi pi-check-circle" },
+  partnerFunnelItems: PartnerFunnelItem[] = [
+    { label: "Leads Qualificados", value: "2.845", color: "#0048ff", icon: "pi pi-users" },
+    { label: "Propostas Enviadas", value: "1.652", color: "#ff9500", icon: "pi pi-send" },
+    { label: "Em Negociação", value: "892", color: "#ff3b30", icon: "pi pi-comments" },
+    { label: "Parceiros Ativos", value: "342", color: "#00c896", icon: "pi pi-check-circle" },
   ]
 
-  categoryItems: CategoryItem[] = [
-    { name: "Roupas", percentage: 25, products: "1.348 Produtos da Categoria" },
-    { name: "Fitness", percentage: 35, products: "1.348 Produtos da Categoria" },
-    { name: "Esportivos", percentage: 40, products: "1.348 Produtos da Categoria" },
-    { name: "Casual", percentage: 45, products: "1.348 Produtos da Categoria" },
-
+  brandCategoryItems: BrandCategoryItem[] = [
+    { name: "Tecnologia", percentage: 35, partners: "120 Parceiros Ativos" },
+    { name: "E-commerce", percentage: 28, partners: "96 Parceiros Ativos" },
+    { name: "Educação", percentage: 22, partners: "75 Parceiros Ativos" },
+    { name: "Outros", percentage: 15, partners: "51 Parceiros Ativos" },
   ]
 
-  recentInvoices: Invoice[] = [
+  recentPartners: RecentPartner[] = [
     {
-      no: "01",
-      idCustomer: "#06499",
-      customerName: "Aurelien Salomon",
-      customerAddress: "089 Kutch Green Apt. 448",
-      date: "04 Set 2019",
-      type: "Elétrico",
-      status: "completed",
-      amount: "R$ 100",
+      id: "WL001",
+      partnerName: "TechSolutions Brasil",
+      brandName: "TechSol",
+      joinDate: "15 Nov 2024",
+      status: "active",
+      revenue: "R$ 45.890",
+      customizations: 12,
     },
     {
-      no: "02",
-      idCustomer: "#06498",
-      customerName: "John Doe",
-      customerAddress: "123 Main St",
-      date: "05 Set 2019",
-      type: "Elétrico",
+      id: "WL002",
+      partnerName: "EduPlatform Ltda",
+      brandName: "EduPro",
+      joinDate: "12 Nov 2024",
       status: "pending",
-      amount: "R$ 200",
+      revenue: "R$ 28.450",
+      customizations: 8,
     },
     {
-      no: "03",
-      idCustomer: "#06497",
-      customerName: "Jane Smith",
-      customerAddress: "456 Elm St",
-      date: "06 Set 2019",
-      type: "Elétrico",
-      status: "failed",
-      amount: "R$ 300",
-    }
+      id: "WL003",
+      partnerName: "CommerceHub",
+      brandName: "ShopHub",
+      joinDate: "10 Nov 2024",
+      status: "active",
+      revenue: "R$ 67.230",
+      customizations: 15,
+    },
   ]
 
-  private salesChart?: Chart
+  private partnersChart?: Chart
   private funnelChart?: Chart
-  private categoryChart?: Chart
+  private brandChart?: Chart
   private overviewChart?: Chart
 
   constructor() {}
@@ -186,27 +187,27 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.createSalesChart()
+      this.createPartnersChart()
       this.createFunnelChart()
-      this.createCategoryChart()
+      this.createBrandChart()
       this.createOverviewChart()
     }, 100)
   }
 
-  private createSalesChart(): void {
-    if (!this.salesChartRef?.nativeElement) return
+  private createPartnersChart(): void {
+    if (!this.partnersChartRef?.nativeElement) return
 
-    const ctx = this.salesChartRef.nativeElement.getContext("2d")
+    const ctx = this.partnersChartRef.nativeElement.getContext("2d")
     if (!ctx) return
 
-    this.salesChart = new Chart(ctx, {
+    this.partnersChart = new Chart(ctx, {
       type: "bar" as ChartType,
       data: {
         labels: ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"],
         datasets: [
           {
             data: this.metricCards[0].chartData,
-            backgroundColor: (ctx:any) => {
+            backgroundColor: (ctx: any) => {
               const index = ctx.dataIndex
               return index === 6 ? "#0048ff" : "#e5e7eb"
             },
@@ -284,20 +285,20 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       },
     })
   }
-// ...existing code...
-    private createCategoryChart(): void {
-      if (!this.categoryChartRef?.nativeElement) return
 
-      const ctx = this.categoryChartRef.nativeElement.getContext("2d")
+    private createBrandChart(): void {
+      if (!this.brandChartRef?.nativeElement) return
+
+      const ctx = this.brandChartRef.nativeElement.getContext("2d")
       if (!ctx) return
 
-      this.categoryChart = new Chart(ctx, {
+      this.brandChart = new Chart(ctx, {
         type: "doughnut" as ChartType,
         data: {
           datasets: [
             {
-              data: this.categoryItems.map((item) => item.percentage).sort((a, b) => b - a),
-              backgroundColor: ["#0048ff", "#002576", "#e5e7eb"],
+              data: this.brandCategoryItems.map((item) => item.percentage).sort((a, b) => b - a),
+              backgroundColor: ["#0048ff", "#002576", "#ff9500", "#e5e7eb"],
               borderWidth: 0,
             },
           ],
@@ -326,8 +327,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         data: {
           datasets: [
             {
-              data: this.cardOverviewItems.map((item) => item.percentage),
-              backgroundColor: this.cardOverviewItems.map((item) => item.color),
+              data: this.brandOverviewItems.map((item) => item.percentage),
+              backgroundColor: this.brandOverviewItems.map((item) => item.color),
               borderWidth: 0,
             },
           ],
@@ -344,9 +345,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         },
       })
     }
-// ...existing code...
 
-  createMiniChart(canvas: HTMLCanvasElement, data: number[], type: "line" | "bar", color: string): void {
+    createMiniChart(canvas: HTMLCanvasElement, data: number[], type: "line" | "bar", color: string): void {
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
@@ -383,21 +383,34 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case "completed":
-        return "status-completed"
+      case "active":
+        return "status-active"
       case "pending":
         return "status-pending"
-      case "failed":
-        return "status-failed"
+      case "inactive":
+        return "status-inactive"
       default:
         return ""
     }
   }
 
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case "active":
+        return "Ativo"
+      case "pending":
+        return "Pendente"
+      case "inactive":
+        return "Inativo"
+      default:
+        return status
+    }
+  }
+
   ngOnDestroy(): void {
-    if (this.salesChart) this.salesChart.destroy()
+    if (this.partnersChart) this.partnersChart.destroy()
     if (this.funnelChart) this.funnelChart.destroy()
-    if (this.categoryChart) this.categoryChart.destroy()
+    if (this.brandChart) this.brandChart.destroy()
     if (this.overviewChart) this.overviewChart.destroy()
   }
 }
