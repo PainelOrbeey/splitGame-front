@@ -5,15 +5,7 @@
     </app-user-menu>
   </header>
 
-  <app-filter-tabs [tabs]="[
-      { label: 'Todos',      value: '' },
-      { label: 'Ativos',     value: 'active' },
-      { label: 'Inativos',   value: 'inactive' },
-      { label: 'Manutenção', value: 'maintenance' }
-    ]" [selected]="filters.status" (selectedChange)="setRevenueStatus($event)" [search]="filters.search"
-    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar adquirente…"
-    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
-  </app-filter-tabs>
+
 
   <div class="summary-grid">
     <app-summary-card class="width-max" title="Total de Adquirentes" [value]="fmt(metrics.totalAcquirers, 'int')"
@@ -29,7 +21,15 @@
     <app-summary-card class="width-max" title="Market Share Médio"
       [value]="fmt(metrics.averageMarketShare, 'percent', 1, 1)" icon="pi pi-chart-pie"></app-summary-card>
   </div>
-
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos',      value: '' },
+        { label: 'Ativos',     value: 'active' },
+        { label: 'Inativos',   value: 'inactive' },
+        { label: 'Manutenção', value: 'maintenance' }
+      ]" [selected]="filters.status" (selectedChange)="setRevenueStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar adquirente…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
   <div class="table-card">
     <div class="table-scroll">
       <table class="user-table">

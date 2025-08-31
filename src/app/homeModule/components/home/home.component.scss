@@ -7,7 +7,7 @@ $sidebar-transition: .3s cubic-bezier(.4,0,.2,1);
   min-height: 100vh;
   --sidebar-width: #{$sidebar-width-open};
 }
-.container-sidebar:has(app-admin-sidebar.collapsed) {
+.container-sidebar:has(app-sidebar.collapsed) {
   --sidebar-width: #{$sidebar-width-closed};
 }
 
