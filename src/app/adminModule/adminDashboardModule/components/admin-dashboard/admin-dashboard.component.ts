@@ -99,7 +99,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       chartData: [30, 35, 40, 45, 50, 55, 60, 65],
     },
     {
-      title: "Total de Vendas",
+      title: "Total de conversão",
       value: "R$ 2.562",
       change: "+4%",
       changeType: "positive",
