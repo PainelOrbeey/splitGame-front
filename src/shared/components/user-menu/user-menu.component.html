@@ -1,11 +1,14 @@
 <div #trigger type="button" class="profile-trigger" pRipple (click)="toggleMenu()">
 
-
   <div class="info">
-    <strong>{{ username }}</strong>
-    <small>{{ email }}</small>
+    <!-- <strong>{{ username }}</strong>
+    <small>{{ email }}</small> -->
+    <p (click)="goToCompany()">ir para company </p>
+
+    <p (click)="goToAdmin()">ir para adm</p>
   </div>
   <i class="pi pi-chevron-down text-sm"></i>
+
 </div>
 
 <!-- ─── MENU (P-DIALOG) ───────────────────────────────── -->

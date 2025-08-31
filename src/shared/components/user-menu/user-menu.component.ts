@@ -66,6 +66,13 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
 
+  goToCompany() {
+    this.router.navigate(['/company/dashboard']);
+  }
+  goToAdmin() {
+    this.router.navigate(['/admin/dashboard']);
+  }
+
   handleClickOutside = (event: MouseEvent) => {
     const trigger = this.triggerRef?.nativeElement;
     const dialog = this.menuDlg?.container as HTMLElement;
