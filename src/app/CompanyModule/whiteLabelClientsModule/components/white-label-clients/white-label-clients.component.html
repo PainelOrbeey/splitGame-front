@@ -1,6 +1,6 @@
 <section class="container-wrapper">
   <header class="header">
-    <h2>Clientes White Label</h2>
+    <h2>Meus Clientes</h2>
     <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
     </app-user-menu>
   </header>
@@ -42,69 +42,64 @@
     (export)="exportCSV()" (filterClick)="sidebarVisible = true">
   </app-filter-tabs>
 
-  <div class="table-card">
-    <div class="table-scroll">
-      <table class="clients-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Parceiro/Marca</th>
-            <th>Tipo</th>
-            <th>Status</th>
-            <th>KYC</th>
-            <th>Risco</th>
-            <th>Transações</th>
-            <th>Volume</th>
-            <th>Cadastro</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let client of paginatedClients">
-            <td>{{ client.id }}</td>
-            <td>
-              <div class="client-info">
-                <span class="name">{{ client.clientName }}</span>
-                <small class="email">{{ client.clientEmail }}</small>
-                <small class="document">{{ formatDocument(client.clientDocument, client.clientType) }}</small>
-              </div>
-            </td>
-            <td>
-              <div class="partner-info">
-                <span class="name">{{ client.partnerName }}</span>
-                <small class="brand">{{ client.brandName }}</small>
-              </div>
-            </td>
-            <td>
-              <span class="tag type-tag">{{ getTypeLabel(client.clientType) }}</span>
-            </td>
-            <td>
-              <span class="tag" [ngClass]="getStatusClass(client.status)">
-                {{ getStatusLabel(client.status) }}
-              </span>
-            </td>
-            <td>
-              <span class="tag" [ngClass]="getKycClass(client.kycStatus)">
-                {{ getKycLabel(client.kycStatus) }}
-              </span>
-            </td>
-            <td>
-              <span class="tag" [ngClass]="getRiskClass(client.riskLevel)">
-                {{ getRiskLabel(client.riskLevel) }}
-              </span>
-            </td>
-            <td>{{ client.totalTransactions | number }}</td>
-            <td>{{ fmt(client.totalVolume, 'currency', 0, 0) }}</td>
-            <td>{{ client.registrationDate | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <button class="btn-action" (click)="viewDetails(client)">
-                <i class="pi pi-eye"></i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <div class="clients-container">
+    <div class="clients-grid">
+      <div class="client-card" *ngFor="let client of paginatedClients" (click)="viewDetails(client)">
+        <div class="card-header">
+          <div class="avatar-container">
+            <img [src]="client.avatar" [alt]="client.clientName" class="client-avatar" />
+            <div class="status-indicator" [ngClass]="getStatusClass(client.status)"></div>
+          </div>
+          <div class="client-info">
+            <h3 class="client-name">{{ client.clientName }}</h3>
+            <p class="client-email">{{ client.clientEmail }}</p>
+            <span class="client-id">{{ client.id }}</span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <div class="partner-section">
+            <div class="partner-item">
+              <span class="label">Parceiro</span>
+              <span class="value">{{ client.partnerName }}</span>
+            </div>
+            <div class="partner-item">
+              <span class="label">Marca</span>
+              <span class="value">{{ client.brandName }}</span>
+            </div>
+          </div>
+
+          <div class="metrics-section">
+            <div class="metric">
+              <span class="metric-value">{{ client.totalTransactions }}</span>
+              <span class="metric-label">Transações</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">{{ fmt(client.totalVolume, 'currency', 0, 0) }}</span>
+              <span class="metric-label">Volume</span>
+            </div>
+          </div>
+
+          <div class="badges-section">
+            <span class="badge type-badge">{{ getTypeLabel(client.clientType) }}</span>
+            <span class="badge kyc-badge" [ngClass]="getKycClass(client.kycStatus)">
+              {{ getKycLabel(client.kycStatus) }}
+            </span>
+            <span class="badge risk-badge" [ngClass]="getRiskClass(client.riskLevel)">
+              {{ getRiskLabel(client.riskLevel) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <span class="registration-date">
+            Cadastrado em {{ client.registrationDate | date:'dd/MM/yyyy' }}
+          </span>
+          <span class="last-activity">
+            {{ getActivityStatus(client.lastActivity) }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <div class="pagination" *ngIf="totalPages > 1">
@@ -113,7 +108,7 @@
       </button>
 
       <span class="page-info">
-        Página {{ currentPage }} de {{ totalPages }}
+        {{ currentPage }} de {{ totalPages }} • {{ filteredClients.length }} clientes
       </span>
 
       <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
@@ -127,8 +122,8 @@
 
     <section class="drawer-content no-scrollbar">
       <div class="field">
-        <span class="caption">ID/Cliente/Parceiro</span>
-        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+        <span class="caption">Buscar</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()" placeholder="Nome, email, parceiro...">
       </div>
 
       <div class="field">
@@ -174,56 +169,22 @@
 
       <div class="field">
         <span class="caption">Parceiro</span>
-        <input type="text" [(ngModel)]="filters.partnerName" (input)="applyFilters()">
+        <input type="text" [(ngModel)]="filters.partnerName" (input)="applyFilters()" placeholder="Nome do parceiro">
       </div>
 
       <div class="field">
         <span class="caption">Marca</span>
-        <input type="text" [(ngModel)]="filters.brandName" (input)="applyFilters()">
-      </div>
-
-      <div class="field">
-        <span class="caption">Método de Pagamento</span>
-        <select [(ngModel)]="filters.preferredPaymentMethod" (change)="applyFilters()">
-          <option value="">Todos</option>
-          <option value="PIX">PIX</option>
-          <option value="Cartão de Crédito">Cartão de Crédito</option>
-          <option value="Cartão de Débito">Cartão de Débito</option>
-          <option value="Boleto">Boleto</option>
-          <option value="Transferência">Transferência</option>
-        </select>
+        <input type="text" [(ngModel)]="filters.brandName" (input)="applyFilters()" placeholder="Nome da marca">
       </div>
 
       <div class="field">
         <span class="caption">Volume mínimo</span>
-        <input type="number" [(ngModel)]="filters.minVolume" (input)="applyFilters()">
+        <input type="number" [(ngModel)]="filters.minVolume" (input)="applyFilters()" placeholder="0,00">
       </div>
 
       <div class="field">
         <span class="caption">Volume máximo</span>
-        <input type="number" [(ngModel)]="filters.maxVolume" (input)="applyFilters()">
-      </div>
-
-      <div class="field">
-        <span class="caption">Período</span>
-        <select [(ngModel)]="filters.period" (change)="applyFilters()">
-          <option value="all">Todos</option>
-          <option value="today">Hoje</option>
-          <option value="week">Últimos 7 dias</option>
-          <option value="month">Este mês</option>
-          <option value="quarter">Este trimestre</option>
-          <option value="year">Este ano</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <span class="caption">Data início</span>
-        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
-      </div>
-
-      <div class="field">
-        <span class="caption">Data fim</span>
-        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+        <input type="number" [(ngModel)]="filters.maxVolume" (input)="applyFilters()" placeholder="0,00">
       </div>
     </section>
 
@@ -233,146 +194,138 @@
     </div>
   </app-sidebar-filters>
 
-  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Cliente" [width]="'900px'">
-    <div *ngIf="selectedClient" class="client-details">
-      <div class="details-grid">
-        <div class="detail-section">
-          <h4>Informações Pessoais</h4>
-          <div class="detail-row">
-            <span class="label">ID:</span>
-            <span class="value">{{ selectedClient.id }}</span>
+  <div class="modal-overlay" *ngIf="detailsVisible" (click)="detailsVisible = false">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="header-content">
+          <img [src]="selectedClient.avatar" [alt]="selectedClient.clientName" class="modal-avatar" />
+          <div class="header-info">
+            <h2>{{ selectedClient.clientName }}</h2>
+            <p>{{ selectedClient.clientEmail }}</p>
+            <span class="modal-client-id">{{ selectedClient.id }}</span>
           </div>
-          <div class="detail-row">
-            <span class="label">Nome:</span>
-            <span class="value">{{ selectedClient.clientName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Email:</span>
-            <span class="value">{{ selectedClient.clientEmail }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Telefone:</span>
-            <span class="value">{{ selectedClient.clientPhone }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Documento:</span>
-            <span class="value">{{ formatDocument(selectedClient.clientDocument, selectedClient.clientType) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Tipo:</span>
-            <span class="value">{{ getTypeLabel(selectedClient.clientType) }}</span>
+        </div>
+        <button class="close-button" (click)="detailsVisible = false">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="info-section">
+          <h3>Status</h3>
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="badge" [ngClass]="getStatusClass(selectedClient.status || '')">
+                {{ getStatusLabel(selectedClient.status || '') }}
+              </span>
+            </div>
+            <div class="status-item">
+              <span class="badge" [ngClass]="getKycClass(selectedClient.kycStatus || '')">
+                KYC: {{ getKycLabel(selectedClient.kycStatus || '') }}
+              </span>
+            </div>
+            <div class="status-item">
+              <span class="badge" [ngClass]="getRiskClass(selectedClient.riskLevel || '')">
+                Risco: {{ getRiskLabel(selectedClient.riskLevel || '') }}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="detail-section">
-          <h4>Informações Comerciais</h4>
-          <div class="detail-row">
-            <span class="label">Parceiro:</span>
-            <span class="value">{{ selectedClient.partnerName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Marca:</span>
-            <span class="value">{{ selectedClient.brandName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Status:</span>
-            <span class="tag" [ngClass]="getStatusClass(selectedClient.status)">
-              {{ getStatusLabel(selectedClient.status) }}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Total de Transações:</span>
-            <span class="value">{{ selectedClient.totalTransactions | number }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Volume Total:</span>
-            <span class="value">{{ fmt(selectedClient.totalVolume, 'currency') }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Ticket Médio:</span>
-            <span class="value">{{ fmt(selectedClient.averageTicket, 'currency') }}</span>
-          </div>
-        </div>
-
-        <div class="detail-section">
-          <h4>Endereço</h4>
-          <div class="detail-row">
-            <span class="label">Logradouro:</span>
-            <span class="value">{{ selectedClient.address.street }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Cidade:</span>
-            <span class="value">{{ selectedClient.address.city }} - {{ selectedClient.address.state }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">CEP:</span>
-            <span class="value">{{ selectedClient.address.zipCode }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">País:</span>
-            <span class="value">{{ selectedClient.address.country }}</span>
+        <div class="info-section">
+          <h3>Performance</h3>
+          <div class="metrics-grid-modal">
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="pi pi-shopping-cart"></i>
+              </div>
+              <div class="metric-content">
+                <span class="metric-number">{{ selectedClient.totalTransactions | number }}</span>
+                <span class="metric-text">Transações</span>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="pi pi-chart-line"></i>
+              </div>
+              <div class="metric-content">
+                <span class="metric-number">{{ fmt(selectedClient.totalVolume || 0, 'currency', 0, 0) }}</span>
+                <span class="metric-text">Volume Total</span>
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-icon">
+                <i class="pi pi-receipt"></i>
+              </div>
+              <div class="metric-content">
+                <span class="metric-number">{{ fmt(selectedClient.averageTicket || 0, 'currency', 0, 0) }}</span>
+                <span class="metric-text">Ticket Médio</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="detail-section">
-          <h4>Compliance e Risco</h4>
-          <div class="detail-row">
-            <span class="label">Status KYC:</span>
-            <span class="tag" [ngClass]="getKycClass(selectedClient.kycStatus)">
-              {{ getKycLabel(selectedClient.kycStatus) }}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Nível de Risco:</span>
-            <span class="tag" [ngClass]="getRiskClass(selectedClient.riskLevel)">
-              {{ getRiskLabel(selectedClient.riskLevel) }}
-            </span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Método Preferido:</span>
-            <span class="value">{{ selectedClient.preferredPaymentMethod }}</span>
-          </div>
-        </div>
-
-        <div class="detail-section" *ngIf="selectedClient.companyInfo">
-          <h4>Informações da Empresa</h4>
-          <div class="detail-row">
-            <span class="label">CNPJ:</span>
-            <span class="value">{{ selectedClient.companyInfo.cnpj }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Razão Social:</span>
-            <span class="value">{{ selectedClient.companyInfo.corporateName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Nome Fantasia:</span>
-            <span class="value">{{ selectedClient.companyInfo.tradeName }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Tipo de Negócio:</span>
-            <span class="value">{{ selectedClient.companyInfo.businessType }}</span>
+        <div class="info-section">
+          <h3>Informações de Contato</h3>
+          <div class="contact-grid">
+            <div class="contact-item">
+              <i class="pi pi-phone"></i>
+              <span>{{ selectedClient.clientPhone }}</span>
+            </div>
+            <div class="contact-item">
+              <i class="pi pi-id-card"></i>
+              <span>{{ formatDocument(selectedClient.clientDocument || '', selectedClient.clientType || '') }}</span>
+            </div>
+            <div class="contact-item">
+              <i class="pi pi-map-marker"></i>
+              <span>{{ selectedClient.address.city }}, {{ selectedClient.address.state }}</span>
+            </div>
+            <div class="contact-item">
+              <i class="pi pi-credit-card"></i>
+              <span>{{ selectedClient.preferredPaymentMethod }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="detail-section">
-          <h4>Datas</h4>
-          <div class="detail-row">
-            <span class="label">Cadastro:</span>
-            <span class="value">{{ selectedClient.registrationDate | date:'dd/MM/yyyy HH:mm' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Última Atividade:</span>
-            <span class="value">{{ selectedClient.lastActivity | date:'dd/MM/yyyy HH:mm' }}</span>
+        <div class="info-section">
+          <h3>Parceria</h3>
+          <div class="partner-grid">
+            <div class="partner-detail">
+              <span class="detail-label">Parceiro</span>
+              <span class="detail-value">{{ selectedClient.partnerName }}</span>
+            </div>
+            <div class="partner-detail">
+              <span class="detail-label">Marca</span>
+              <span class="detail-value">{{ selectedClient.brandName }}</span>
+            </div>
+            <div class="partner-detail">
+              <span class="detail-label">Tipo</span>
+              <span class="detail-value">{{ getTypeLabel(selectedClient.clientType || '') }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="detail-section full-width" *ngIf="selectedClient.tags.length > 0">
-          <h4>Tags</h4>
+        <div class="info-section">
+          <h3>Datas</h3>
+          <div class="dates-grid">
+            <div class="date-item">
+              <span class="date-label">Cadastro</span>
+              <span class="date-value">{{ selectedClient.registrationDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="date-item">
+              <span class="date-label">Última Atividade</span>
+              <span class="date-value">{{ getActivityStatus(selectedClient.lastActivity) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section" *ngIf="selectedClient.tags && selectedClient.tags.length > 0">
+          <h3>Tags</h3>
           <div class="tags-container">
             <span class="tag-item" *ngFor="let tag of selectedClient.tags">{{ tag }}</span>
           </div>
         </div>
       </div>
     </div>
-  </app-custom-dialog>
+  </div>
 </section>

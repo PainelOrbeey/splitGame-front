@@ -1,0 +1,278 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Integrações</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="filters-section">
+    <div class="search-bar">
+      <i class="pi pi-search"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="filters.search" 
+        (input)="applyFilters()" 
+        placeholder="Buscar integrações..."
+        class="search-input">
+    </div>
+
+    <div class="filter-selects">
+      <select [(ngModel)]="filters.category" (change)="applyFilters()" class="filter-select">
+        <option *ngFor="let category of categories" [value]="category.value">
+          {{ category.label }}
+        </option>
+      </select>
+
+      <select [(ngModel)]="filters.status" (change)="applyFilters()" class="filter-select">
+        <option *ngFor="let status of statusOptions" [value]="status.value">
+          {{ status.label }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="integrations-grid">
+    <div 
+      *ngFor="let integration of filteredIntegrations" 
+      class="integration-card"
+      [ngClass]="'card-' + integration.status">
+      
+      <div class="card-header">
+        <div class="integration-icon" [style.background-color]="integration.color">
+          <i [class]="integration.icon"></i>
+        </div>
+        
+        <div class="integration-info">
+          <h3>{{ integration.name }}</h3>
+          <span class="category">{{ getCategoryLabel(integration.category) }}</span>
+        </div>
+
+        <div class="status-badge" [ngClass]="getStatusClass(integration.status)">
+          {{ getStatusLabel(integration.status) }}
+        </div>
+      </div>
+
+      <div class="card-body">
+        <p class="description">{{ integration.description }}</p>
+        
+        <div class="features">
+          <span *ngFor="let feature of integration.features.slice(0, 3)" class="feature-tag">
+            {{ feature }}
+          </span>
+          <span *ngIf="integration.features.length > 3" class="feature-more">
+            +{{ integration.features.length - 3 }}
+          </span>
+        </div>
+
+        <div class="metrics" *ngIf="integration.status === 'connected' && integration.metrics">
+          <div class="metric">
+            <span class="metric-label">Requisições</span>
+            <span class="metric-value">{{ fmt(integration.metrics.totalRequests, 'int') }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Taxa de Sucesso</span>
+            <span class="metric-value">{{ fmt(integration.metrics.successRate, 'percent', 1, 1) }}</span>
+          </div>
+        </div>
+
+        <div class="last-sync" *ngIf="integration.lastSync">
+          <i class="pi pi-clock"></i>
+          <span>Última sincronização: {{ integration.lastSync | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button 
+          class="btn-secondary" 
+          (click)="viewDetails(integration)">
+          <i class="pi pi-info-circle"></i>
+          Detalhes
+        </button>
+
+        <button 
+          *ngIf="integration.status === 'connected'" 
+          class="btn-danger" 
+          (click)="toggleIntegration(integration)">
+          <i class="pi pi-times"></i>
+          Desconectar
+        </button>
+
+        <button 
+          *ngIf="integration.status !== 'connected'" 
+          class="btn-primary" 
+          (click)="connectIntegration(integration)">
+          <i class="pi pi-plus"></i>
+          Conectar
+        </button>
+
+        <button 
+          *ngIf="integration.status === 'connected'" 
+          class="btn-outline" 
+          (click)="testConnection(integration)">
+          <i class="pi pi-refresh"></i>
+          Testar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalhes - Clean Design -->
+  <div class="clean-modal-overlay" *ngIf="detailsVisible" (click)="detailsVisible = false">
+    <div class="clean-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="integration-title">
+          <div class="integration-icon" [style.background-color]="selectedIntegration?.color">
+            <i [class]="selectedIntegration?.icon"></i>
+          </div>
+          <div>
+            <h2>{{ selectedIntegration?.name }}</h2>
+            <span class="category">{{ getCategoryLabel(selectedIntegration?.category || '') }}</span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="detailsVisible = false">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-content" *ngIf="selectedIntegration">
+        <div class="info-section">
+          <h3>Informações Gerais</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Status</span>
+              <span class="value" [ngClass]="getStatusClass(selectedIntegration.status)">
+                {{ getStatusLabel(selectedIntegration.status) }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="label">Versão</span>
+              <span class="value">{{ selectedIntegration.version }}</span>
+            </div>
+            <div class="info-item" *ngIf="selectedIntegration.connectedAt">
+              <span class="label">Conectado em</span>
+              <span class="value">{{ selectedIntegration.connectedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-item" *ngIf="selectedIntegration.lastSync">
+              <span class="label">Última sincronização</span>
+              <span class="value">{{ selectedIntegration.lastSync | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Funcionalidades</h3>
+          <div class="features-list">
+            <span *ngFor="let feature of selectedIntegration.features" class="feature-item">
+              <i class="pi pi-check"></i>
+              {{ feature }}
+            </span>
+          </div>
+        </div>
+
+        <div class="info-section" *ngIf="selectedIntegration.metrics && selectedIntegration.status === 'connected'">
+          <h3>Métricas de Performance</h3>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value">{{ fmt(selectedIntegration.metrics.totalRequests, 'int') }}</div>
+              <div class="metric-label">Total de Requisições</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">{{ fmt(selectedIntegration.metrics.successRate, 'percent', 1, 1) }}</div>
+              <div class="metric-label">Taxa de Sucesso</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">{{ selectedIntegration.metrics.avgResponseTime }}ms</div>
+              <div class="metric-label">Tempo Médio</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value">{{ selectedIntegration.metrics.errorCount }}</div>
+              <div class="metric-label">Erros</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" (click)="detailsVisible = false">Fechar</button>
+        <button 
+          *ngIf="selectedIntegration?.status === 'connected'" 
+          class="btn-secondary" 
+          (click)="testConnection(selectedIntegration)">
+          Testar Conexão
+        </button>
+        <button 
+          *ngIf="selectedIntegration?.status !== 'connected'" 
+          class="btn-primary" 
+          (click)="connectIntegration(selectedIntegration); detailsVisible = false">
+          Conectar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Conexão - Clean Design -->
+  <div class="clean-modal-overlay" *ngIf="connectVisible" (click)="connectVisible = false">
+    <div class="clean-modal connect-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="integration-title">
+          <div class="integration-icon" [style.background-color]="selectedIntegration?.color">
+            <i [class]="selectedIntegration?.icon"></i>
+          </div>
+          <div>
+            <h2>Conectar {{ selectedIntegration?.name }}</h2>
+            <span class="category">Configurar integração</span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="connectVisible = false">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <div class="form-section">
+          <div class="field">
+            <label>API Key</label>
+            <input type="password" placeholder="Digite sua API Key">
+          </div>
+          
+          <div class="field">
+            <label>Ambiente</label>
+            <select>
+              <option value="sandbox">Sandbox (Teste)</option>
+              <option value="production">Produção</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Webhook URL</label>
+            <input type="url" placeholder="https://sua-url.com/webhook">
+          </div>
+
+          <div class="field checkbox-field">
+            <label>
+              <input type="checkbox" checked>
+              <span class="checkmark"></span>
+              Sincronização automática
+            </label>
+          </div>
+
+          <div class="field checkbox-field">
+            <label>
+              <input type="checkbox" checked>
+              <span class="checkmark"></span>
+              Receber notificações
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-outline" (click)="connectVisible = false">Cancelar</button>
+        <button class="btn-primary" (click)="saveConnection()">
+          <i class="pi pi-check"></i>
+          Conectar
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

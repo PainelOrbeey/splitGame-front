@@ -1,5 +1,5 @@
 import { Component, type OnInit } from "@angular/core"
-import type { WhiteLabelClient, ClientFilters, ClientMetrics } from "../../interfaces/white-label-client.interface"
+import type { WhiteLabelClient, ClientMetrics, ClientFilters } from "../../interfaces/white-label-client.interface"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { DialogModule } from "primeng/dialog"
@@ -13,37 +13,23 @@ import { UserMenuComponent } from "../../../../../shared/components/user-menu/us
   selector: "app-white-label-clients",
   templateUrl: "./white-label-clients.component.html",
   styleUrls: ["./white-label-clients.component.scss"],
-  standalone: true,
-      imports: [CommonModule, DialogModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
+    standalone: true,
+        imports: [CommonModule, DialogModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
 
 })
 export class WhiteLabelClientsComponent implements OnInit {
   clients: WhiteLabelClient[] = []
   filteredClients: WhiteLabelClient[] = []
   paginatedClients: WhiteLabelClient[] = []
+  selectedClient!: WhiteLabelClient
 
   metrics: ClientMetrics = {
-    totalClients: 8947,
-    activeClients: 7234,
-    newClientsThisMonth: 456,
-    totalVolume: 3456789.5,
-    averageTicket: 387.45,
-    conversionRate: 85.2,
-    clientsByType: [
-      { type: "INDIVIDUAL", count: 5678, percentage: 63.5 },
-      { type: "BUSINESS", count: 3269, percentage: 36.5 },
-    ],
-    clientsByStatus: [
-      { status: "ACTIVE", count: 7234, percentage: 80.9 },
-      { status: "INACTIVE", count: 1234, percentage: 13.8 },
-      { status: "PENDING", count: 345, percentage: 3.9 },
-      { status: "BLOCKED", count: 134, percentage: 1.5 },
-    ],
-    topPartnersByClients: [
-      { partnerName: "TechSolutions Ltda", clientCount: 1234, volume: 567890.0 },
-      { partnerName: "E-commerce Plus", clientCount: 987, volume: 456789.0 },
-      { partnerName: "EduTech Brasil", clientCount: 654, volume: 234567.0 },
-    ],
+    totalClients: 0,
+    activeClients: 0,
+    totalVolume: 0,
+    averageTicket: 0,
+    conversionRate: 0,
+    newClientsThisMonth: 0,
   }
 
   filters: ClientFilters = {
@@ -54,67 +40,54 @@ export class WhiteLabelClientsComponent implements OnInit {
     riskLevel: "",
     partnerName: "",
     brandName: "",
+    minVolume: null,
+    maxVolume: null,
     period: "all",
+    dateFrom: "",
+    dateTo: "",
+    preferredPaymentMethod: "",
   }
 
+  // Pagination
   currentPage = 1
-  itemsPerPage = 10
-  totalPages = 0
+  itemsPerPage = 12
+  totalPages = 1
+
+  // UI States
   sidebarVisible = false
   detailsVisible = false
-  selectedClient: WhiteLabelClient | null = null
+  isLoading = false
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadClients()
-    this.applyFilters()
+    this.updateMetrics()
   }
 
-  loadClients(): void {
-    // Simulando dados de clientes
+  loadClients() {
+    this.isLoading = true
+
+    // Mock data with real working avatar URLs
     this.clients = [
-      {
-        id: "CLI001",
-        partnerName: "TechSolutions Ltda",
-        brandName: "TechPay",
-        clientName: "João Silva Santos",
-        clientEmail: "joao.silva@email.com",
-        clientPhone: "+55 11 99999-9999",
-        clientDocument: "123.456.789-00",
-        clientType: "INDIVIDUAL",
-        status: "ACTIVE",
-        registrationDate: new Date("2024-01-10T10:30:00"),
-        lastActivity: new Date("2024-01-15T14:20:00"),
-        totalTransactions: 45,
-        totalVolume: 12500.0,
-        averageTicket: 277.78,
-        preferredPaymentMethod: "PIX",
-        address: {
-          street: "Rua das Flores, 123",
-          city: "São Paulo",
-          state: "SP",
-          zipCode: "01234-567",
-          country: "Brasil",
-        },
-        kycStatus: "APPROVED",
-        riskLevel: "LOW",
-        tags: ["VIP", "Recorrente"],
-      },
+
       {
         id: "CLI002",
-        partnerName: "E-commerce Plus",
-        brandName: "ShopFast",
-        clientName: "Maria Oliveira Ltda",
-        clientEmail: "contato@mariaoliveira.com.br",
-        clientPhone: "+55 21 88888-8888",
+        clientName: "Carlos Eduardo Mendes",
+        clientEmail: "carlos.mendes@empresa.com",
+        clientPhone: "(21) 98888-5678",
         clientDocument: "12.345.678/0001-90",
         clientType: "BUSINESS",
+        partnerName: "FinanceHub",
+        brandName: "QuickPay",
         status: "ACTIVE",
-        registrationDate: new Date("2024-01-08T09:15:00"),
-        lastActivity: new Date("2024-01-14T16:45:00"),
-        totalTransactions: 128,
-        totalVolume: 45600.0,
-        averageTicket: 356.25,
+        kycStatus: "APPROVED",
+        riskLevel: "MEDIUM",
+        totalTransactions: 89,
+        totalVolume: 125000.0,
+        averageTicket: 1404.49,
+        registrationDate: new Date("2024-02-20"),
+        lastActivity: new Date("2024-11-28"),
         preferredPaymentMethod: "Cartão de Crédito",
+        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
         address: {
           street: "Av. Paulista, 1000",
           city: "Rio de Janeiro",
@@ -122,32 +95,33 @@ export class WhiteLabelClientsComponent implements OnInit {
           zipCode: "20000-000",
           country: "Brasil",
         },
-        kycStatus: "APPROVED",
-        riskLevel: "MEDIUM",
-        tags: ["Corporativo", "Alto Volume"],
         companyInfo: {
           cnpj: "12.345.678/0001-90",
-          corporateName: "Maria Oliveira Comércio Ltda",
-          tradeName: "Loja da Maria",
-          businessType: "Varejo",
+          corporateName: "Mendes & Associados Ltda",
+          tradeName: "Mendes Consultoria",
+          businessType: "Consultoria",
         },
+        tags: ["Empresarial", "Consultoria"],
       },
       {
         id: "CLI003",
-        partnerName: "EduTech Brasil",
-        brandName: "LearnPay",
-        clientName: "Carlos Mendes",
-        clientEmail: "carlos.mendes@email.com",
-        clientPhone: "+55 31 77777-7777",
-        clientDocument: "987.654.321-00",
+        clientName: "Marina Costa Lima",
+        clientEmail: "marina.costa@gmail.com",
+        clientPhone: "(31) 97777-9012",
+        clientDocument: "987.654.321-09",
         clientType: "INDIVIDUAL",
+        partnerName: "PaymentPro",
+        brandName: "InstantPay",
         status: "PENDING",
-        registrationDate: new Date("2024-01-12T11:00:00"),
-        lastActivity: new Date("2024-01-12T11:00:00"),
-        totalTransactions: 0,
-        totalVolume: 0,
-        averageTicket: 0,
-        preferredPaymentMethod: "Boleto",
+        kycStatus: "PENDING",
+        riskLevel: "LOW",
+        totalTransactions: 23,
+        totalVolume: 12500.0,
+        averageTicket: 543.48,
+        registrationDate: new Date("2024-11-15"),
+        lastActivity: new Date("2024-11-30"),
+        preferredPaymentMethod: "PIX",
+        avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
         address: {
           street: "Rua Minas Gerais, 456",
           city: "Belo Horizonte",
@@ -155,22 +129,134 @@ export class WhiteLabelClientsComponent implements OnInit {
           zipCode: "30000-000",
           country: "Brasil",
         },
-        kycStatus: "PENDING",
-        riskLevel: "LOW",
         tags: ["Novo Cliente"],
       },
+      {
+        id: "CLI004",
+        clientName: "Roberto Santos Oliveira",
+        clientEmail: "roberto.santos@tech.com",
+        clientPhone: "(85) 96666-3456",
+        clientDocument: "11.222.333/0001-44",
+        clientType: "BUSINESS",
+        partnerName: "TechPay Solutions",
+        brandName: "PayFast",
+        status: "ACTIVE",
+        kycStatus: "APPROVED",
+        riskLevel: "HIGH",
+        totalTransactions: 234,
+        totalVolume: 456000.0,
+        averageTicket: 1948.72,
+        registrationDate: new Date("2023-08-10"),
+        lastActivity: new Date("2024-12-02"),
+        preferredPaymentMethod: "Transferência",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        address: {
+          street: "Av. Beira Mar, 789",
+          city: "Fortaleza",
+          state: "CE",
+          zipCode: "60000-000",
+          country: "Brasil",
+        },
+        companyInfo: {
+          cnpj: "11.222.333/0001-44",
+          corporateName: "Santos Tech Solutions Ltda",
+          tradeName: "SantosTech",
+          businessType: "Tecnologia",
+        },
+        tags: ["Alto Risco", "Grande Volume", "Tecnologia"],
+      },
+      {
+        id: "CLI005",
+        clientName: "Fernanda Lima Pereira",
+        clientEmail: "fernanda.lima@design.com",
+        clientPhone: "(47) 95555-7890",
+        clientDocument: "555.666.777-88",
+        clientType: "INDIVIDUAL",
+        partnerName: "DesignPay",
+        brandName: "CreativePay",
+        status: "INACTIVE",
+        kycStatus: "EXPIRED",
+        riskLevel: "MEDIUM",
+        totalTransactions: 67,
+        totalVolume: 34500.0,
+        averageTicket: 514.93,
+        registrationDate: new Date("2024-03-05"),
+        lastActivity: new Date("2024-10-15"),
+        preferredPaymentMethod: "Cartão de Débito",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        address: {
+          street: "Rua das Palmeiras, 321",
+          city: "Florianópolis",
+          state: "SC",
+          zipCode: "88000-000",
+          country: "Brasil",
+        },
+        tags: ["Designer", "Freelancer"],
+      },
+      {
+        id: "CLI006",
+        clientName: "Lucas Oliveira Costa",
+        clientEmail: "lucas.oliveira@startup.com",
+        clientPhone: "(61) 94444-2468",
+        clientDocument: "22.333.444/0001-55",
+        clientType: "BUSINESS",
+        partnerName: "StartupPay",
+        brandName: "InnovaPay",
+        status: "BLOCKED",
+        kycStatus: "REJECTED",
+        riskLevel: "HIGH",
+        totalTransactions: 12,
+        totalVolume: 8900.0,
+        averageTicket: 741.67,
+        registrationDate: new Date("2024-10-01"),
+        lastActivity: new Date("2024-11-01"),
+        preferredPaymentMethod: "PIX",
+        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        address: {
+          street: "SQN 123, Bloco A",
+          city: "Brasília",
+          state: "DF",
+          zipCode: "70000-000",
+          country: "Brasil",
+        },
+        companyInfo: {
+          cnpj: "22.333.444/0001-55",
+          corporateName: "Oliveira Inovação Ltda",
+          tradeName: "InnovaLab",
+          businessType: "Startup",
+        },
+        tags: ["Bloqueado", "Startup", "Risco"],
+      },
     ]
+
+    this.applyFilters()
+    this.isLoading = false
   }
 
-  applyFilters(): void {
+  updateMetrics() {
+    this.metrics = {
+      totalClients: this.clients.length,
+      activeClients: this.clients.filter((c) => c.status === "ACTIVE").length,
+      totalVolume: this.clients.reduce((sum, c) => sum + c.totalVolume, 0),
+      averageTicket: this.clients.reduce((sum, c) => sum + c.averageTicket, 0) / this.clients.length,
+      conversionRate: (this.clients.filter((c) => c.status === "ACTIVE").length / this.clients.length) * 100,
+      newClientsThisMonth: this.clients.filter((c) => {
+        const now = new Date()
+        const clientDate = new Date(c.registrationDate)
+        return clientDate.getMonth() === now.getMonth() && clientDate.getFullYear() === now.getFullYear()
+      }).length,
+    }
+  }
+
+  applyFilters() {
     this.filteredClients = this.clients.filter((client) => {
       const matchesSearch =
         !this.filters.search ||
-        client.id.toLowerCase().includes(this.filters.search.toLowerCase()) ||
         client.clientName.toLowerCase().includes(this.filters.search.toLowerCase()) ||
         client.clientEmail.toLowerCase().includes(this.filters.search.toLowerCase()) ||
         client.partnerName.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        client.brandName.toLowerCase().includes(this.filters.search.toLowerCase())
+        client.brandName.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        client.id.toLowerCase().includes(this.filters.search.toLowerCase())
 
       const matchesStatus = !this.filters.status || client.status === this.filters.status
       const matchesType = !this.filters.clientType || client.clientType === this.filters.clientType
@@ -180,9 +266,8 @@ export class WhiteLabelClientsComponent implements OnInit {
         !this.filters.partnerName || client.partnerName.toLowerCase().includes(this.filters.partnerName.toLowerCase())
       const matchesBrand =
         !this.filters.brandName || client.brandName.toLowerCase().includes(this.filters.brandName.toLowerCase())
-      const matchesVolume =
-        (!this.filters.minVolume || client.totalVolume >= this.filters.minVolume) &&
-        (!this.filters.maxVolume || client.totalVolume <= this.filters.maxVolume)
+      const matchesMinVolume = !this.filters.minVolume || client.totalVolume >= this.filters.minVolume
+      const matchesMaxVolume = !this.filters.maxVolume || client.totalVolume <= this.filters.maxVolume
 
       return (
         matchesSearch &&
@@ -192,41 +277,36 @@ export class WhiteLabelClientsComponent implements OnInit {
         matchesRisk &&
         matchesPartner &&
         matchesBrand &&
-        matchesVolume
+        matchesMinVolume &&
+        matchesMaxVolume
       )
     })
 
-    this.totalPages = Math.ceil(this.filteredClients.length / this.itemsPerPage)
-    this.currentPage = 1
-    this.updatePaginatedClients()
+    this.updatePagination()
   }
 
-  updatePaginatedClients(): void {
+  updatePagination() {
+    this.totalPages = Math.ceil(this.filteredClients.length / this.itemsPerPage)
+    this.currentPage = Math.min(this.currentPage, this.totalPages || 1)
+
     const startIndex = (this.currentPage - 1) * this.itemsPerPage
     const endIndex = startIndex + this.itemsPerPage
     this.paginatedClients = this.filteredClients.slice(startIndex, endIndex)
   }
 
-  setStatus(status: string): void {
+  changePage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page
+      this.updatePagination()
+    }
+  }
+
+  setStatus(status: string) {
     this.filters.status = status
     this.applyFilters()
   }
 
-  changePage(page: number): void {
-    this.currentPage = page
-    this.updatePaginatedClients()
-  }
-
-  viewDetails(client: WhiteLabelClient): void {
-    this.selectedClient = client
-    this.detailsVisible = true
-  }
-
-  exportCSV(): void {
-    console.log("Exportando clientes para CSV")
-  }
-
-  clearFilters(): void {
+  clearFilters() {
     this.filters = {
       search: "",
       status: "",
@@ -235,77 +315,27 @@ export class WhiteLabelClientsComponent implements OnInit {
       riskLevel: "",
       partnerName: "",
       brandName: "",
+      minVolume: null,
+      maxVolume: null,
       period: "all",
+      dateFrom: "",
+      dateTo: "",
+      preferredPaymentMethod: "",
     }
     this.applyFilters()
   }
 
-  getStatusClass(status: string): string {
-    const statusClasses = {
-      ACTIVE: "status-active",
-      INACTIVE: "status-inactive",
-      PENDING: "status-pending",
-      BLOCKED: "status-blocked",
-    }
-    return statusClasses[status as keyof typeof statusClasses] || ""
+  viewDetails(client: WhiteLabelClient) {
+    this.selectedClient = client
+    this.detailsVisible = true
   }
 
-  getStatusLabel(status: string): string {
-    const statusLabels = {
-      ACTIVE: "Ativo",
-      INACTIVE: "Inativo",
-      PENDING: "Pendente",
-      BLOCKED: "Bloqueado",
-    }
-    return statusLabels[status as keyof typeof statusLabels] || status
+  exportCSV() {
+    // Implementation for CSV export
+    console.log("Exporting CSV...")
   }
 
-  getKycClass(status: string): string {
-    const kycClasses = {
-      APPROVED: "kyc-approved",
-      PENDING: "kyc-pending",
-      REJECTED: "kyc-rejected",
-      EXPIRED: "kyc-expired",
-    }
-    return kycClasses[status as keyof typeof kycClasses] || ""
-  }
-
-  getKycLabel(status: string): string {
-    const kycLabels = {
-      APPROVED: "Aprovado",
-      PENDING: "Pendente",
-      REJECTED: "Rejeitado",
-      EXPIRED: "Expirado",
-    }
-    return kycLabels[status as keyof typeof kycLabels] || status
-  }
-
-  getRiskClass(level: string): string {
-    const riskClasses = {
-      LOW: "risk-low",
-      MEDIUM: "risk-medium",
-      HIGH: "risk-high",
-    }
-    return riskClasses[level as keyof typeof riskClasses] || ""
-  }
-
-  getRiskLabel(level: string): string {
-    const riskLabels = {
-      LOW: "Baixo",
-      MEDIUM: "Médio",
-      HIGH: "Alto",
-    }
-    return riskLabels[level as keyof typeof riskLabels] || level
-  }
-
-  getTypeLabel(type: string): string {
-    const typeLabels = {
-      INDIVIDUAL: "Pessoa Física",
-      BUSINESS: "Pessoa Jurídica",
-    }
-    return typeLabels[type as keyof typeof typeLabels] || type
-  }
-
+  // Helper methods
   fmt(value: number, type: string, min = 0, max = 2): string {
     if (type === "currency") {
       return new Intl.NumberFormat("pt-BR", {
@@ -320,10 +350,9 @@ export class WhiteLabelClientsComponent implements OnInit {
         minimumFractionDigits: min,
         maximumFractionDigits: max,
       }).format(value / 100)
-    } else if (type === "int") {
+    } else {
       return new Intl.NumberFormat("pt-BR").format(value)
     }
-    return value.toString()
   }
 
   formatDocument(document: string, type: string): string {
@@ -332,5 +361,83 @@ export class WhiteLabelClientsComponent implements OnInit {
     } else {
       return document.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5")
     }
+  }
+
+  getStatusClass(status: string): string {
+    const classes: { [key: string]: string } = {
+      ACTIVE: "status-active",
+      INACTIVE: "status-inactive",
+      PENDING: "status-pending",
+      BLOCKED: "status-blocked",
+    }
+    return classes[status] || ""
+  }
+
+  getStatusLabel(status: string): string {
+    const labels: { [key: string]: string } = {
+      ACTIVE: "Ativo",
+      INACTIVE: "Inativo",
+      PENDING: "Pendente",
+      BLOCKED: "Bloqueado",
+    }
+    return labels[status] || status
+  }
+
+  getTypeLabel(type: string): string {
+    const labels: { [key: string]: string } = {
+      INDIVIDUAL: "Pessoa Física",
+      BUSINESS: "Pessoa Jurídica",
+    }
+    return labels[type] || type
+  }
+
+  getKycClass(status: string): string {
+    const classes: { [key: string]: string } = {
+      APPROVED: "kyc-approved",
+      PENDING: "kyc-pending",
+      REJECTED: "kyc-rejected",
+      EXPIRED: "kyc-expired",
+    }
+    return classes[status] || ""
+  }
+
+  getKycLabel(status: string): string {
+    const labels: { [key: string]: string } = {
+      APPROVED: "Aprovado",
+      PENDING: "Pendente",
+      REJECTED: "Rejeitado",
+      EXPIRED: "Expirado",
+    }
+    return labels[status] || status
+  }
+
+  getRiskClass(level: string): string {
+    const classes: { [key: string]: string } = {
+      LOW: "risk-low",
+      MEDIUM: "risk-medium",
+      HIGH: "risk-high",
+    }
+    return classes[level] || ""
+  }
+
+  getRiskLabel(level: string): string {
+    const labels: { [key: string]: string } = {
+      LOW: "Baixo",
+      MEDIUM: "Médio",
+      HIGH: "Alto",
+    }
+    return labels[level] || level
+  }
+
+  getActivityStatus(lastActivity: Date): string {
+    const now = new Date()
+    const diff = now.getTime() - new Date(lastActivity).getTime()
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+    if (days === 0) return "Hoje"
+    if (days === 1) return "Ontem"
+    if (days < 7) return `${days} dias atrás`
+    if (days < 30) return `${Math.floor(days / 7)} semanas atrás`
+    return `${Math.floor(days / 30)} meses atrás`
   }
 }

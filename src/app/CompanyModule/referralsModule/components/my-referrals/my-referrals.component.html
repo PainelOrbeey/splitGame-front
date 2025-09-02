@@ -1,0 +1,435 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Meus Referidos</h2>
+    <app-user-menu [username]="'Afiliado Sistema'" [email]="'afiliado@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="metrics-grid">
+    <app-summary-card class="width-max" title="Total de Referidos" [value]="fmt(metrics.totalReferrals, 'int')"
+      icon="pi pi-users" delta="+12.5%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Referidos Ativos" [value]="fmt(metrics.activeReferrals, 'int')"
+      icon="pi pi-user-plus" delta="+8.3%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total em Comissões" [value]="fmt(metrics.totalCommissions, 'currency', 0, 0)"
+      icon="pi pi-dollar" delta="+25.7%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Comissões do Mês" [value]="fmt(metrics.monthlyCommissions, 'currency', 0, 0)"
+      icon="pi pi-calendar" delta="+18.9%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Conversão" [value]="fmt(metrics.conversionRate, 'percent', 1, 1)"
+      icon="pi pi-chart-line" delta="+3.2%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Comissão Média" [value]="fmt(metrics.averageCommissionPerReferral, 'currency', 0, 0)"
+      icon="pi pi-chart-bar" delta="+7.1%" deltaType="up">
+    </app-summary-card>
+  </div>
+
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos',        value: '' },
+        { label: 'Ativos',       value: 'active' },
+        { label: 'Pendentes',    value: 'pending' },
+        { label: 'Inativos',     value: 'inactive' },
+        { label: 'Rejeitados',   value: 'rejected' },
+        { label: 'Bloqueados',   value: 'blocked' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar referido ou e-mail…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="referrals-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Referido</th>
+            <th>Status</th>
+            <th>KYC</th>
+            <th>Origem</th>
+            <th>Nível</th>
+            <th>Transações</th>
+            <th>Volume Total</th>
+            <th>Comissões</th>
+            <th>Score de Risco</th>
+            <th>Data Cadastro</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let referral of paginatedReferrals">
+            <td>{{ referral.id }}</td>
+            <td>
+              <div class="referral-info">
+                <span class="name">{{ referral.referredName }}</span>
+                <small class="email">{{ referral.referredEmail }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(referral.status)">
+                {{ getStatusLabel(referral.status) }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getKycStatusClass(referral.kycStatus)">
+                {{ getKycStatusLabel(referral.kycStatus) }}
+              </span>
+            </td>
+            <td>{{ getSourceLabel(referral.source) }}</td>
+            <td>
+              <span class="level-badge">Nível {{ referral.level }}</span>
+            </td>
+            <td>{{ fmt(referral.totalTransactions, 'int') }}</td>
+            <td>{{ fmt(referral.totalVolume, 'currency', 0, 0) }}</td>
+            <td>{{ fmt(referral.totalCommissions, 'currency', 0, 0) }}</td>
+            <td>
+              <div class="risk-score"
+                [ngClass]="referral.riskScore >= 70 ? 'good' : referral.riskScore >= 50 ? 'medium' : 'low'">
+                {{ referral.riskScore }}
+              </div>
+            </td>
+            <td>{{ referral.registrationDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <button class="btn-action" (click)="viewDetails(referral)">
+                <i class="pi pi-eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+
+      <span class="page-info">
+        Página {{ currentPage }} de {{ totalPages }}
+      </span>
+
+      <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Referidos</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Nome/E-mail</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="active">Ativo</option>
+          <option value="pending">Pendente</option>
+          <option value="inactive">Inativo</option>
+          <option value="rejected">Rejeitado</option>
+          <option value="blocked">Bloqueado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Status KYC</span>
+        <select [(ngModel)]="filters.kycStatus" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="approved">Aprovado</option>
+          <option value="pending">Pendente</option>
+          <option value="rejected">Rejeitado</option>
+          <option value="expired">Expirado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Origem</span>
+        <select [(ngModel)]="filters.source" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="direct">Direto</option>
+          <option value="social">Redes Sociais</option>
+          <option value="email">E-mail</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="website">Website</option>
+          <option value="event">Evento</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Nível</span>
+        <select [(ngModel)]="filters.level" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="1">Nível 1</option>
+          <option value="2">Nível 2</option>
+          <option value="3">Nível 3</option>
+          <option value="4">Nível 4</option>
+          <option value="5">Nível 5</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Comissões mínimas</span>
+        <input type="number" [(ngModel)]="filters.minCommissions" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Comissões máximas</span>
+        <input type="number" [(ngModel)]="filters.maxCommissions" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume mínimo</span>
+        <input type="number" [(ngModel)]="filters.minVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Volume máximo</span>
+        <input type="number" [(ngModel)]="filters.maxVolume" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Score de risco mín.</span>
+        <input type="number" [(ngModel)]="filters.minRiskScore" min="0" max="100" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Score de risco máx.</span>
+        <input type="number" [(ngModel)]="filters.maxRiskScore" min="0" max="100" (input)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Possui transações</span>
+        <select [(ngModel)]="filters.hasTransactions" (change)="applyFilters()">
+          <option [ngValue]="null">Todos</option>
+          <option [ngValue]="true">Sim</option>
+          <option [ngValue]="false">Não</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Referido" [width]="'900px'">
+    <div *ngIf="selectedReferral" class="referral-details">
+      <div class="details-grid">
+        <div class="detail-section">
+          <h4>Informações Pessoais</h4>
+          <div class="detail-row">
+            <span class="label">ID:</span>
+            <span class="value">{{ selectedReferral.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Nome:</span>
+            <span class="value">{{ selectedReferral.referredName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">E-mail:</span>
+            <span class="value">{{ selectedReferral.referredEmail }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Telefone:</span>
+            <span class="value">{{ selectedReferral.referredPhone }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Documento:</span>
+            <span class="value">{{ selectedReferral.referredDocument }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Status e Configurações</h4>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="tag" [ngClass]="getStatusClass(selectedReferral.status)">
+              {{ getStatusLabel(selectedReferral.status) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status KYC:</span>
+            <span class="tag" [ngClass]="getKycStatusClass(selectedReferral.kycStatus)">
+              {{ getKycStatusLabel(selectedReferral.kycStatus) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Origem:</span>
+            <span class="value">{{ getSourceLabel(selectedReferral.source) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Nível:</span>
+            <span class="value">{{ selectedReferral.level }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Taxa de Comissão:</span>
+            <span class="value">{{ fmt(selectedReferral.commissionRate, 'percent', 1, 1) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Performance Financeira</h4>
+          <div class="detail-row">
+            <span class="label">Total de Transações:</span>
+            <span class="value">{{ fmt(selectedReferral.totalTransactions, 'int') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Volume Total:</span>
+            <span class="value">{{ fmt(selectedReferral.totalVolume, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total em Comissões:</span>
+            <span class="value">{{ fmt(selectedReferral.totalCommissions, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Ticket Médio:</span>
+            <span class="value">{{ fmt(selectedReferral.performance.averageTicket, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Taxa de Conversão:</span>
+            <span class="value">{{ fmt(selectedReferral.performance.conversionRate, 'percent', 1, 1) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Datas Importantes</h4>
+          <div class="detail-row">
+            <span class="label">Data de Cadastro:</span>
+            <span class="value">{{ selectedReferral.registrationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReferral.activationDate">
+            <span class="label">Data de Ativação:</span>
+            <span class="value">{{ selectedReferral.activationDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReferral.lastActivityDate">
+            <span class="label">Última Atividade:</span>
+            <span class="value">{{ selectedReferral.lastActivityDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReferral.contact.lastContact">
+            <span class="label">Último Contato:</span>
+            <span class="value">{{ selectedReferral.contact.lastContact | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Contato e Comunicação</h4>
+          <div class="detail-row">
+            <span class="label">Método Preferido:</span>
+            <span class="value">{{ selectedReferral.contact.preferredMethod }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Número de Contatos:</span>
+            <span class="value">{{ selectedReferral.contact.contactCount }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Score de Risco:</span>
+            <span class="value risk-score"
+              [ngClass]="selectedReferral.riskScore >= 70 ? 'good' : selectedReferral.riskScore >= 50 ? 'medium' : 'low'">
+              {{ selectedReferral.riskScore }}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Métricas de Performance</h4>
+          <div class="detail-row">
+            <span class="label">Taxa de Retenção:</span>
+            <span class="value">{{ fmt(selectedReferral.performance.retentionRate, 'percent', 1, 1) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Crescimento Mensal:</span>
+            <span class="value">{{ fmt(selectedReferral.performance.monthlyGrowth, 'percent', 1, 1) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width" *ngIf="selectedReferral.address">
+          <h4>Endereço</h4>
+          <div class="detail-row">
+            <span class="label">Endereço:</span>
+            <span class="value">
+              {{ selectedReferral.address.street }}, {{ selectedReferral.address.number }}
+              <span *ngIf="selectedReferral.address.complement"> - {{ selectedReferral.address.complement }}</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Bairro:</span>
+            <span class="value">{{ selectedReferral.address.neighborhood }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Cidade/Estado:</span>
+            <span class="value">{{ selectedReferral.address.city }}/{{ selectedReferral.address.state }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">CEP:</span>
+            <span class="value">{{ selectedReferral.address.zipCode }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width" *ngIf="selectedReferral.bankAccount">
+          <h4>Dados Bancários</h4>
+          <div class="detail-row">
+            <span class="label">Banco:</span>
+            <span class="value">{{ selectedReferral.bankAccount.bank }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Agência/Conta:</span>
+            <span class="value">{{ selectedReferral.bankAccount.agency }} / {{ selectedReferral.bankAccount.account }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Tipo de Conta:</span>
+            <span class="value">{{ selectedReferral.bankAccount.accountType === 'checking' ? 'Corrente' : 'Poupança' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReferral.bankAccount.pixKey">
+            <span class="label">Chave PIX:</span>
+            <span class="value">{{ selectedReferral.bankAccount.pixKey }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width" *ngIf="selectedReferral.notes || selectedReferral.rejectionReason">
+          <h4>Observações</h4>
+          <div class="detail-row" *ngIf="selectedReferral.notes">
+            <span class="label">Notas:</span>
+            <span class="value">{{ selectedReferral.notes }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReferral.rejectionReason">
+            <span class="label">Motivo da Rejeição:</span>
+            <span class="value">{{ selectedReferral.rejectionReason }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

@@ -1,19 +1,22 @@
 export interface WhiteLabelClient {
   id: string
-  partnerName: string
-  brandName: string
   clientName: string
   clientEmail: string
   clientPhone: string
   clientDocument: string
   clientType: "INDIVIDUAL" | "BUSINESS"
+  partnerName: string
+  brandName: string
   status: "ACTIVE" | "INACTIVE" | "PENDING" | "BLOCKED"
-  registrationDate: Date
-  lastActivity: Date
+  kycStatus: "APPROVED" | "PENDING" | "REJECTED" | "EXPIRED"
+  riskLevel: "LOW" | "MEDIUM" | "HIGH"
   totalTransactions: number
   totalVolume: number
   averageTicket: number
+  registrationDate: Date
+  lastActivity: Date
   preferredPaymentMethod: string
+  avatar: string
   address: {
     street: string
     city: string
@@ -21,59 +24,36 @@ export interface WhiteLabelClient {
     zipCode: string
     country: string
   }
-  kycStatus: "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED"
-  riskLevel: "LOW" | "MEDIUM" | "HIGH"
-  tags: string[]
   companyInfo?: {
     cnpj: string
     corporateName: string
     tradeName: string
     businessType: string
   }
-  bankAccount?: {
-    bank: string
-    agency: string
-    account: string
-    accountType: string
-  }
-}
-
-export interface ClientFilters {
-  search: string
-  status: string
-  clientType?: string
-  kycStatus?: string
-  riskLevel?: string
-  partnerName?: string
-  brandName?: string
-  minVolume?: number
-  maxVolume?: number
-  period?: string
-  dateFrom?: string
-  dateTo?: string
-  preferredPaymentMethod?: string
+  tags: string[]
 }
 
 export interface ClientMetrics {
   totalClients: number
   activeClients: number
-  newClientsThisMonth: number
   totalVolume: number
   averageTicket: number
   conversionRate: number
-  clientsByType: Array<{
-    type: string
-    count: number
-    percentage: number
-  }>
-  clientsByStatus: Array<{
-    status: string
-    count: number
-    percentage: number
-  }>
-  topPartnersByClients: Array<{
-    partnerName: string
-    clientCount: number
-    volume: number
-  }>
+  newClientsThisMonth: number
+}
+
+export interface ClientFilters {
+  search: string
+  status: string
+  clientType: string
+  kycStatus: string
+  riskLevel: string
+  partnerName: string
+  brandName: string
+  minVolume: number | null
+  maxVolume: number | null
+  period: string
+  dateFrom: string
+  dateTo: string
+  preferredPaymentMethod: string
 }

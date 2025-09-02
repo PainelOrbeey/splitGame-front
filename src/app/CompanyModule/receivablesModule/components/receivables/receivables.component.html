@@ -1,0 +1,375 @@
+<section class="container-wrapper">
+  <header class="header">
+    <div class="header-left">
+      <h2>Meus Recebimentos</h2>
+      <div class="view-toggle">
+        <button class="toggle-btn" [class.active]="viewMode === 'cards'" (click)="viewMode = 'cards'">
+          <i class="pi pi-th-large"></i>
+          Cards
+        </button>
+        <button class="toggle-btn" [class.active]="viewMode === 'timeline'" (click)="viewMode = 'timeline'">
+          <i class="pi pi-clock"></i>
+          Timeline
+        </button>
+      </div>
+    </div>
+    <app-user-menu [username]="'Usuário Sistema'" [email]="'usuario@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="metrics-grid">
+    <app-summary-card class="width-max" title="Total de Recebimentos" [value]="fmt(metrics.totalReceivables, 'int')"
+      icon="pi pi-receipt" delta="+12.5%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Valor Total" [value]="fmt(metrics.totalAmount, 'currency', 0, 0)"
+      icon="pi pi-dollar" delta="+18.7%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Já Recebido" [value]="fmt(metrics.receivedAmount, 'currency', 0, 0)"
+      icon="pi pi-check-circle" delta="+25.3%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Pendente" [value]="fmt(metrics.pendingAmount, 'currency', 0, 0)"
+      icon="pi pi-clock" delta="-5.2%" deltaType="down">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageAmount, 'currency', 0, 0)"
+      icon="pi pi-chart-line" delta="+8.9%" deltaType="up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Sucesso" [value]="fmt(metrics.successRate, 'percent', 1, 1)"
+      icon="pi pi-verified" delta="+2.1%" deltaType="up">
+    </app-summary-card>
+  </div>
+
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos',        value: '' },
+      { label: 'Pendentes',    value: 'pending' },
+      { label: 'Processando',  value: 'processing' },
+      { label: 'Recebidos',    value: 'received' },
+      { label: 'Falharam',     value: 'failed' },
+      { label: 'Cancelados',   value: 'cancelled' }
+    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar recebimento, empresa ou cliente…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <div class="receivables-container" *ngIf="viewMode === 'cards'">
+    <div class="receivables-grid">
+      <div class="receivable-card" *ngFor="let receivable of paginatedReceivables" (click)="viewDetails(receivable)">
+        <div class="card-header">
+          <div class="card-title">
+            <h3>{{ receivable.companyName }}</h3>
+            <span class="receivable-id">{{ receivable.id }}</span>
+          </div>
+          <span class="tag" [ngClass]="getStatusClass(receivable.status)">
+            {{ getStatusLabel(receivable.status) }}
+          </span>
+        </div>
+
+        <div class="card-content">
+          <div class="amount-section">
+            <div class="main-amount">
+              <span class="label">Valor Total</span>
+              <span class="value">{{ fmt(receivable.amount, 'currency') }}</span>
+            </div>
+            <div class="net-amount">
+              <span class="label">Líquido</span>
+              <span class="value">{{ fmt(receivable.netAmount, 'currency') }}</span>
+            </div>
+          </div>
+
+          <div class="details-section">
+            <div class="detail-item">
+              <i class="pi pi-user"></i>
+              <span>{{ receivable.customer.name }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="pi pi-credit-card"></i>
+              <span>{{ getPaymentMethodLabel(receivable.paymentMethod) }}</span>
+            </div>
+            <div class="detail-item">
+              <i class="pi pi-building"></i>
+              <span>{{ receivable.acquirer }}</span>
+            </div>
+          </div>
+
+          <div class="installments-section" *ngIf="receivable.installments > 1">
+            <div class="installment-progress">
+              <span class="installment-text">{{ receivable.currentInstallment }}/{{ receivable.installments }}
+                parcelas</span>
+              <div class="progress-bar">
+                <div class="progress-fill"
+                  [style.width.%]="(receivable.currentInstallment / receivable.installments) * 100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="dates">
+            <span class="due-date">
+              <i class="pi pi-calendar"></i>
+              Vence: {{ receivable.dueDate | date:'dd/MM/yyyy' }}
+            </span>
+            <span class="created-date" *ngIf="receivable.receivedDate">
+              <i class="pi pi-check"></i>
+              Recebido: {{ receivable.receivedDate | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <span class="tag" [ngClass]="getPriorityClass(receivable.priority)">
+            {{ getPriorityLabel(receivable.priority) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="timeline-container" *ngIf="viewMode === 'timeline'">
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let receivable of paginatedReceivables" (click)="viewDetails(receivable)">
+        <div class="timeline-marker" [ngClass]="getStatusClass(receivable.status)">
+          <i class="pi pi-circle-fill"></i>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <h4>{{ receivable.companyName }}</h4>
+            <span class="timeline-date">{{ receivable.createdDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="timeline-body">
+            <p>{{ receivable.description }}</p>
+            <div class="timeline-details">
+              <span class="amount">{{ fmt(receivable.amount, 'currency') }}</span>
+              <span class="method">{{ getPaymentMethodLabel(receivable.paymentMethod) }}</span>
+              <span class="tag" [ngClass]="getStatusClass(receivable.status)">
+                {{ getStatusLabel(receivable.status) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="page-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+
+    <span class="page-info">
+      Página {{ currentPage }} de {{ totalPages }}
+    </span>
+
+    <button class="page-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+  </div>
+
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Recebimentos</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Busca Geral</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()" placeholder="ID, empresa, cliente...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="processing">Processando</option>
+          <option value="received">Recebido</option>
+          <option value="failed">Falhou</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pix">PIX</option>
+          <option value="ted">TED</option>
+          <option value="transfer">Transferência</option>
+          <option value="boleto">Boleto</option>
+          <option value="card">Cartão</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Adquirente</span>
+        <select [(ngModel)]="filters.acquirer" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="Stone">Stone</option>
+          <option value="Cielo">Cielo</option>
+          <option value="Rede">Rede</option>
+          <option value="PagSeguro">PagSeguro</option>
+          <option value="Mercado Pago">Mercado Pago</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Prioridade</span>
+        <select [(ngModel)]="filters.priority" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="low">Baixa</option>
+          <option value="normal">Normal</option>
+          <option value="high">Alta</option>
+          <option value="urgent">Urgente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+
+      <div class="field">
+        <span class="caption">Cliente</span>
+        <input type="text" [(ngModel)]="filters.customer" (input)="applyFilters()" placeholder="Nome do cliente">
+      </div>
+
+      <div class="field">
+        <span class="caption">Referência</span>
+        <input type="text" [(ngModel)]="filters.reference" (input)="applyFilters()" placeholder="Código de referência">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes do Recebimento" [width]="'900px'">
+    <div *ngIf="selectedReceivable" class="receivable-details">
+      <div class="details-header">
+        <div class="header-info">
+          <h3>{{ selectedReceivable.companyName }}</h3>
+          <span class="receivable-id">{{ selectedReceivable.id }}</span>
+        </div>
+        <span class="tag large" [ngClass]="getStatusClass(selectedReceivable.status)">
+          {{ getStatusLabel(selectedReceivable.status) }}
+        </span>
+      </div>
+
+      <div class="details-grid">
+        <div class="detail-section">
+          <h4>Valores</h4>
+          <div class="detail-row">
+            <span class="label">Valor Total:</span>
+            <span class="value highlight">{{ fmt(selectedReceivable.amount, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Taxas:</span>
+            <span class="value">{{ fmt(selectedReceivable.fees, 'currency') }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Valor Líquido:</span>
+            <span class="value highlight">{{ fmt(selectedReceivable.netAmount, 'currency') }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Pagamento</h4>
+          <div class="detail-row">
+            <span class="label">Método:</span>
+            <span class="value">{{ getPaymentMethodLabel(selectedReceivable.paymentMethod) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Adquirente:</span>
+            <span class="value">{{ selectedReceivable.acquirer }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Parcelas:</span>
+            <span class="value">{{ selectedReceivable.currentInstallment }}/{{ selectedReceivable.installments }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Cliente</h4>
+          <div class="detail-row">
+            <span class="label">Nome:</span>
+            <span class="value">{{ selectedReceivable.customer.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">E-mail:</span>
+            <span class="value">{{ selectedReceivable.customer.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Documento:</span>
+            <span class="value">{{ selectedReceivable.customer.document }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Telefone:</span>
+            <span class="value">{{ selectedReceivable.customer.phone }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Datas</h4>
+          <div class="detail-row">
+            <span class="label">Criado em:</span>
+            <span class="value">{{ selectedReceivable.createdDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Vencimento:</span>
+            <span class="value">{{ selectedReceivable.dueDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedReceivable.receivedDate">
+            <span class="label">Recebido em:</span>
+            <span class="value">{{ selectedReceivable.receivedDate | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full-width">
+          <h4>Informações Adicionais</h4>
+          <div class="detail-row">
+            <span class="label">Descrição:</span>
+            <span class="value">{{ selectedReceivable.description }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Referência:</span>
+            <span class="value">{{ selectedReceivable.reference }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Prioridade:</span>
+            <span class="tag" [ngClass]="getPriorityClass(selectedReceivable.priority)">
+              {{ getPriorityLabel(selectedReceivable.priority) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

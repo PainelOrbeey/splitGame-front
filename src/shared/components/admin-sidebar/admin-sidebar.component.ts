@@ -91,7 +91,23 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       label: "Meus Clientes",
       icon: "pi pi-users",
       route: "/company/clients",
-    }
+    },
+    {
+      label: "Meus Referidos",
+      icon: "pi pi-users",
+      route: "/company/referrals",
+    },
+    {
+      label: "Integrações",
+      icon: "pi pi-microchip",
+      route: "/company/integrations",
+    },
+    {
+      label: "Meus Recebíveis",
+      icon: "pi pi-money-bill",
+      route: "/company/receivables",
+    },
+
 
   ]
 
@@ -100,8 +116,7 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
   ]
 
   private userFooter: NavItem[] = [
-    { label: "Minha Conta", icon: "pi pi-user", route: "/company/account" },
-    { label: "Configurações", icon: "pi pi-cog", route: "/company/settings" },
+    { label: "Minha Empresa", icon: "pi pi-building", route: "/company/my-company" },
   ]
 
   constructor(private router: Router) {}

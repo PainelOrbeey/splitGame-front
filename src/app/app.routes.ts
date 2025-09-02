@@ -13,6 +13,10 @@ import { AcquirerRevenueComponent } from './adminModule/financialReportsModule/c
 import { WhiteLabelDashboardComponent } from './CompanyModule/whiteLabelDashboardModule/components/white-label-dashboard/white-label-dashboard.component';
 import { WhiteLabelTransactionsComponent } from './CompanyModule/whiteLabelTransactionsModule/components/white-label-transactions/white-label-transactions.component';
 import { WhiteLabelClientsComponent } from './CompanyModule/whiteLabelClientsModule/components/white-label-clients/white-label-clients.component';
+import { MyReferralsComponent } from './CompanyModule/referralsModule/components/my-referrals/my-referrals.component';
+import { IntegrationsComponent } from './CompanyModule/integrationsModule/components/integrations/integrations.component';
+import { ReceivablesComponent } from './CompanyModule/receivablesModule/components/receivables/receivables.component';
+import { MyCompanyComponent } from './CompanyModule/companyModule/components/my-company/my-company.component';
 
 
 export const routes: Routes = [
@@ -43,7 +47,10 @@ export const routes: Routes = [
       { path: 'dashboard', component: WhiteLabelDashboardComponent },
       { path: 'transactions', component: WhiteLabelTransactionsComponent },
       { path: 'clients', component: WhiteLabelClientsComponent },
-
+      { path: 'referrals', component: MyReferralsComponent },
+      { path: 'integrations', component: IntegrationsComponent },
+      { path: 'receivables', component: ReceivablesComponent },
+      { path: 'my-company', component: MyCompanyComponent }
     ]
   },
   { path: '**', redirectTo: 'home/dashboard' }

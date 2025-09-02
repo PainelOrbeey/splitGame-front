@@ -1,0 +1,476 @@
+<section class="container-wrapper">
+  <header class="header">
+    <div class="header-left">
+      <div class="company-header">
+        <div class="company-logo">
+          <img [src]="company?.logo || '/placeholder.svg?height=60&width=60'" [alt]="company?.name">
+        </div>
+        <div class="company-info">
+          <h2>{{ company?.name }}</h2>
+          <div class="company-meta">
+            <span class="tag" [ngClass]="getPlanClass(company?.plan || '')">
+              {{ getPlanLabel(company?.plan || '') }}
+            </span>
+            <span class="tag" [ngClass]="getStatusClass(company?.status || '')">
+              {{ getStatusLabel(company?.status || '') }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="success-message" *ngIf="saveSuccess">
+    <i class="pi pi-check-circle"></i>
+    Informações salvas com sucesso!
+  </div>
+
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'info'" (click)="setActiveTab('info')">
+        <i class="pi pi-building"></i>
+        Informações
+      </button>
+      <button class="tab" [class.active]="activeTab === 'settings'" (click)="setActiveTab('settings')">
+        <i class="pi pi-cog"></i>
+        Configurações
+      </button>
+      <button class="tab" [class.active]="activeTab === 'team'" (click)="setActiveTab('team')">
+        <i class="pi pi-users"></i>
+        Equipe
+      </button>
+      <button class="tab" [class.active]="activeTab === 'documents'" (click)="setActiveTab('documents')">
+        <i class="pi pi-file"></i>
+        Documentos
+      </button>
+      <button class="tab" [class.active]="activeTab === 'billing'" (click)="setActiveTab('billing')">
+        <i class="pi pi-credit-card"></i>
+        Faturamento
+      </button>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'info'">
+    <div class="content-header">
+      <h3>Informações da Empresa</h3>
+      <button class="btn-primary" (click)="toggleEditMode()" *ngIf="!editMode">
+        <i class="pi pi-pencil"></i>
+        Editar
+      </button>
+      <div class="edit-actions" *ngIf="editMode">
+        <button class="btn-success" (click)="saveCompanyInfo()" [disabled]="loading">
+          <i class="pi pi-check" *ngIf="!loading"></i>
+          <i class="pi pi-spin pi-spinner" *ngIf="loading"></i>
+          Salvar
+        </button>
+        <button class="btn-secondary" (click)="toggleEditMode()">
+          <i class="pi pi-times"></i>
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-section">
+        <h4>Dados Básicos</h4>
+        <div class="form-grid">
+          <div class="field">
+            <label>Razão Social</label>
+            <input type="text" [(ngModel)]="companyForm.name" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Nome Fantasia</label>
+            <input type="text" [(ngModel)]="companyForm.tradeName" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>CNPJ</label>
+            <input type="text" [(ngModel)]="companyForm.document" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <input type="email" [(ngModel)]="companyForm.email" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Telefone</label>
+            <input type="text" [(ngModel)]="companyForm.phone" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input type="url" [(ngModel)]="companyForm.website" [readonly]="!editMode" [class.readonly]="!editMode">
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Endereço</h4>
+        <div class="form-grid">
+          <div class="field full-width">
+            <label>Logradouro</label>
+            <input type="text" [(ngModel)]="companyForm.address.street" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Número</label>
+            <input type="text" [(ngModel)]="companyForm.address.number" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Complemento</label>
+            <input type="text" [(ngModel)]="companyForm.address.complement" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Bairro</label>
+            <input type="text" [(ngModel)]="companyForm.address.neighborhood" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Cidade</label>
+            <input type="text" [(ngModel)]="companyForm.address.city" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Estado</label>
+            <input type="text" [(ngModel)]="companyForm.address.state" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>CEP</label>
+            <input type="text" [(ngModel)]="companyForm.address.zipCode" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Dados Bancários</h4>
+        <div class="form-grid">
+          <div class="field">
+            <label>Banco</label>
+            <input type="text" [(ngModel)]="companyForm.bankAccount.bank" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Agência</label>
+            <input type="text" [(ngModel)]="companyForm.bankAccount.agency" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Conta</label>
+            <input type="text" [(ngModel)]="companyForm.bankAccount.account" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field">
+            <label>Titular</label>
+            <input type="text" [(ngModel)]="companyForm.bankAccount.accountHolder" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+          <div class="field full-width">
+            <label>Chave PIX</label>
+            <input type="text" [(ngModel)]="companyForm.bankAccount.pixKey" [readonly]="!editMode"
+              [class.readonly]="!editMode">
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h4>Métricas</h4>
+        <div class="metrics-cards">
+          <div class="metric-card">
+            <div class="metric-icon">
+              <i class="pi pi-chart-line"></i>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Total de Transações</span>
+              <span class="metric-value">{{ fmt(company.metrics.totalTransactions || 0, 'int') }}</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">
+              <i class="pi pi-dollar"></i>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Volume Total</span>
+              <span class="metric-value">{{ fmt(company.metrics.totalVolume || 0, 'currency', 0, 0) }}</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">
+              <i class="pi pi-calendar"></i>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Volume Mensal</span>
+              <span class="metric-value">{{ fmt(company.metrics.monthlyVolume || 0, 'currency', 0, 0) }}</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">
+              <i class="pi pi-shopping-cart"></i>
+            </div>
+            <div class="metric-content">
+              <span class="metric-label">Ticket Médio</span>
+              <span class="metric-value">{{ fmt(company.metrics.averageTicket || 0, 'currency') }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'settings'">
+    <div class="content-header">
+      <h3>Configurações</h3>
+      <button class="btn-success" (click)="saveSettings()" [disabled]="loading">
+        <i class="pi pi-check" *ngIf="!loading"></i>
+        <i class="pi pi-spin pi-spinner" *ngIf="loading"></i>
+        Salvar Configurações
+      </button>
+    </div>
+
+    <div class="settings-grid">
+      <div class="settings-section">
+        <h4>Notificações</h4>
+        <div class="settings-options">
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.notifications.email">
+              <span class="checkmark"></span>
+              Notificações por E-mail
+            </label>
+          </div>
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.notifications.sms">
+              <span class="checkmark"></span>
+              Notificações por SMS
+            </label>
+          </div>
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.notifications.push">
+              <span class="checkmark"></span>
+              Notificações Push
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Segurança</h4>
+        <div class="settings-options">
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.security.twoFactor">
+              <span class="checkmark"></span>
+              Autenticação de Dois Fatores
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>Timeout de Sessão (minutos)</label>
+            <input type="number" [(ngModel)]="settingsForm!.security.sessionTimeout" min="5" max="480">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Faturamento</h4>
+        <div class="settings-options">
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.billing.autoPayment">
+              <span class="checkmark"></span>
+              Pagamento Automático
+            </label>
+          </div>
+          <div class="setting-item">
+            <label>E-mail para Faturas</label>
+            <input type="email" [(ngModel)]="settingsForm!.billing.invoiceEmail">
+          </div>
+          <div class="setting-item">
+            <label>Método de Pagamento</label>
+            <select [(ngModel)]="settingsForm!.billing.paymentMethod">
+              <option value="card">Cartão de Crédito</option>
+              <option value="boleto">Boleto</option>
+              <option value="pix">PIX</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Integrações</h4>
+        <div class="settings-options">
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.integrations.webhook.enabled">
+              <span class="checkmark"></span>
+              Webhook Habilitado
+            </label>
+          </div>
+          <div class="setting-item" *ngIf="settingsForm!.integrations.webhook.enabled">
+            <label>URL do Webhook</label>
+            <input type="url" [(ngModel)]="settingsForm!.integrations.webhook.url">
+          </div>
+          <div class="setting-item">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="settingsForm!.integrations.api.enabled">
+              <span class="checkmark"></span>
+              API Habilitada
+            </label>
+          </div>
+          <div class="setting-item" *ngIf="settingsForm!.integrations.api.enabled">
+            <label>Rate Limit (req/min)</label>
+            <input type="number" [(ngModel)]="settingsForm!.integrations.api.rateLimit" min="100" max="10000">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'team'">
+    <div class="content-header">
+      <h3>Equipe</h3>
+      <button class="btn-primary" (click)="addUserVisible = true">
+        <i class="pi pi-plus"></i>
+        Adicionar Usuário
+      </button>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card" *ngFor="let user of company?.team">
+        <div class="team-avatar">
+          <img [src]="'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face'"
+            [alt]="user.name">
+          <span class="status-indicator" [ngClass]="getStatusClass(user.status)"></span>
+        </div>
+        <div class="team-info">
+          <h4>{{ user.name }}</h4>
+          <p>{{ user.email }}</p>
+          <div class="team-meta">
+            <span class="tag" [ngClass]="getStatusClass(user.status)">
+              {{ getStatusLabel(user.status) }}
+            </span>
+            <span class="role">{{ getRoleLabel(user.role) }}</span>
+          </div>
+          <div class="team-stats" *ngIf="user.lastAccess">
+            <small>Último acesso: {{ user.lastAccess | date:'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+        </div>
+        <div class="team-actions">
+          <button class="btn-action" (click)="removeUser(user)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'documents'">
+    <div class="content-header">
+      <h3>Documentos</h3>
+      <button class="btn-primary" (click)="uploadDocumentVisible = true">
+        <i class="pi pi-upload"></i>
+        Enviar Documento
+      </button>
+    </div>
+
+    <div class="documents-grid">
+      <div class="document-card" *ngFor="let doc of company?.documents">
+        <div class="document-icon">
+          <i class="pi pi-file-pdf"></i>
+        </div>
+        <div class="document-info">
+          <h4>{{ doc.name }}</h4>
+          <div class="document-meta">
+            <span class="tag" [ngClass]="getStatusClass(doc.status)">
+              {{ getStatusLabel(doc.status) }}
+            </span>
+            <span class="upload-date">{{ doc.uploadDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="document-expiry" *ngIf="doc.expiryDate">
+            <small>Vence em: {{ doc.expiryDate | date:'dd/MM/yyyy' }}</small>
+          </div>
+        </div>
+        <div class="document-actions">
+          <button class="btn-action">
+            <i class="pi pi-download"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'billing'">
+    <div class="content-header">
+      <h3>Faturamento</h3>
+    </div>
+
+    <div class="billing-overview">
+      <div class="billing-card">
+        <h4>Plano Atual</h4>
+        <div class="plan-info">
+          <span class="plan-name">{{ getPlanLabel(company?.plan || '') }}</span>
+          <span class="plan-price">R$ 299,90/mês</span>
+        </div>
+        <button class="btn-primary">Alterar Plano</button>
+      </div>
+
+      <div class="billing-card">
+        <h4>Próxima Cobrança</h4>
+        <div class="billing-info">
+          <span class="billing-date">15/02/2024</span>
+          <span class="billing-amount">R$ 299,90</span>
+        </div>
+        <button class="btn-secondary">Ver Histórico</button>
+      </div>
+
+      <div class="billing-card">
+        <h4>Método de Pagamento</h4>
+        <div class="payment-info">
+          <i class="pi pi-credit-card"></i>
+          <span>**** **** **** 1234</span>
+        </div>
+        <button class="btn-secondary">Alterar</button>
+      </div>
+    </div>
+  </div>
+
+  <app-custom-dialog [(visible)]="addUserVisible" title="Adicionar Usuário" [width]="'500px'">
+    <div class="add-user-form">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" [(ngModel)]="newUser.name" placeholder="Nome completo">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" [(ngModel)]="newUser.email" placeholder="email@empresa.com">
+      </div>
+      <div class="field">
+        <label>Função</label>
+        <select [(ngModel)]="newUser.role">
+          <option value="">Selecione uma função</option>
+          <option value="admin">Administrador</option>
+          <option value="manager">Gerente</option>
+          <option value="operator">Operador</option>
+          <option value="viewer">Visualizador</option>
+        </select>
+      </div>
+    </div>
+    <div footer class="modal-footer">
+      <button class="btn-primary" (click)="addUser()">Adicionar</button>
+      <button class="btn-secondary" (click)="addUserVisible = false">Cancelar</button>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="confirmDeleteVisible" title="Confirmar Exclusão" [width]="'400px'">
+    <div class="confirm-content">
+      <p>Tem certeza que deseja remover <strong>{{ selectedUser?.name }}</strong> da equipe?</p>
+    </div>
+    <div footer class="modal-footer">
+      <button class="btn-danger" (click)="confirmRemoveUser()">Remover</button>
+      <button class="btn-secondary" (click)="confirmDeleteVisible = false">Cancelar</button>
+    </div>
+  </app-custom-dialog>
+</section>
