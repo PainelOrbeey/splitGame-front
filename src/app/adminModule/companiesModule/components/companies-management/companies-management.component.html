@@ -5,16 +5,7 @@
     </app-user-menu>
   </header>
 
-  <app-filter-tabs [tabs]="[
-      { label: 'Todas', value: '' },
-      { label: 'Ativas', value: 'active' },
-      { label: 'Pendentes', value: 'pending' },
-      { label: 'Inativas', value: 'inactive' },
-      { label: 'Bloqueadas', value: 'blocked' }
-    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
-    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
-    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
-  </app-filter-tabs>
+
 
   <div class="summary-grid">
     <app-summary-card class="width-max" title="Total de Empresas" [value]="fmt(metrics.totalCompanies, 'int')"
@@ -41,7 +32,16 @@
       icon="pi pi-percentage">
     </app-summary-card>
   </div>
-
+  <app-filter-tabs [tabs]="[
+        { label: 'Todas', value: '' },
+        { label: 'Ativas', value: 'active' },
+        { label: 'Pendentes', value: 'pending' },
+        { label: 'Inativas', value: 'inactive' },
+        { label: 'Bloqueadas', value: 'blocked' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
   <div class="table-card">
     <div class="table-header">
       <h3>Lista de Empresas ({{ totalItems }})</h3>
