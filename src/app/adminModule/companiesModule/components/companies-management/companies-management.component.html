@@ -5,7 +5,16 @@
     </app-user-menu>
   </header>
 
-
+  <app-filter-tabs [tabs]="[
+      { label: 'Todas', value: '' },
+      { label: 'Ativas', value: 'active' },
+      { label: 'Pendentes', value: 'pending' },
+      { label: 'Inativas', value: 'inactive' },
+      { label: 'Bloqueadas', value: 'blocked' }
+    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
 
   <div class="summary-grid">
     <app-summary-card class="width-max" title="Total de Empresas" [value]="fmt(metrics.totalCompanies, 'int')"
@@ -32,16 +41,7 @@
       icon="pi pi-percentage">
     </app-summary-card>
   </div>
-  <app-filter-tabs [tabs]="[
-        { label: 'Todas', value: '' },
-        { label: 'Ativas', value: 'active' },
-        { label: 'Pendentes', value: 'pending' },
-        { label: 'Inativas', value: 'inactive' },
-        { label: 'Bloqueadas', value: 'blocked' }
-      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
-    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
-    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
-  </app-filter-tabs>
+
   <div class="table-card">
     <div class="table-header">
       <h3>Lista de Empresas ({{ totalItems }})</h3>
@@ -91,6 +91,9 @@
             <td>{{ company.createdAt | date:'dd/MM/yyyy' }}</td>
             <td>
               <div class="action-buttons">
+                <button class="action-btn edit-btn" (click)="editCompany(company)">
+                  <i class="pi pi-pencil"></i>
+                </button>
                 <button class="action-btn view-btn" (click)="viewCompany(company)">
                   <i class="pi pi-eye"></i>
                 </button>
@@ -101,15 +104,14 @@
       </table>
     </div>
 
-
+    <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+    </orb-pagination>
   </div>
-  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" [currentPage]="itemsPerPage"
-    (pageChange)="onPageChange($event)">
-  </orb-pagination>
+
   <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
     <h3 header>Filtros de Empresas</h3>
 
-    <section class="drawer-content no-scrollbar">
+    <div class="drawer-content no-scrollbar">
       <div class="field">
         <span class="caption">Nome/Email/CNPJ</span>
         <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()">
@@ -199,7 +201,7 @@
         <span class="caption">Data de cadastro (fim)</span>
         <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
       </div>
-    </section>
+    </div>
 
     <div footer class="drawer-footer">
       <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
@@ -297,6 +299,390 @@
             <label>Status KYC:</label>
             <span class="tag" [ngClass]="getKycStatusClass(selectedCompany.kycStatus)">
               {{ selectedCompany.kycStatus | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="editCompanyDialogVisible" title="Detalhes da Empresa" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleEditDialogAction($event)" width="600px" maxHeight="90vh">
+
+    <div *ngIf="selectedCompany" class="edit-company-content">
+      <div class="company-header">
+        <div class="company-avatar">
+          <span>{{ selectedCompany.name.charAt(0) }}</span>
+        </div>
+        <div class="company-info">
+          <h3>{{ selectedCompany.name }}</h3>
+          <p>{{ selectedCompany.cnpj }}</p>
+        </div>
+      </div>
+
+      <div class="edit-options">
+        <div class="edit-option" (click)="handleEditOption('fees')">
+          <div class="option-icon">
+            <i class="pi pi-percentage"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Alterar Taxas</span>
+          </div>
+          <button class="option-btn">Editar</button>
+        </div>
+
+        <div class="edit-option" (click)="handleEditOption('permissions')">
+          <div class="option-icon">
+            <i class="pi pi-shield"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Alterar permissões</span>
+          </div>
+          <button class="option-btn">Editar</button>
+        </div>
+
+        <div class="edit-option" (click)="handleEditOption('reserves')">
+          <div class="option-icon">
+            <i class="pi pi-wallet"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Reservas financeiras</span>
+          </div>
+          <button class="option-btn">Editar</button>
+        </div>
+
+        <div class="edit-option" (click)="handleEditOption('acquirer')">
+          <div class="option-icon">
+            <i class="pi pi-building"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Alterar Adquirente</span>
+          </div>
+          <button class="option-btn">Editar</button>
+        </div>
+
+        <div class="edit-option" (click)="handleEditOption('baas')">
+          <div class="option-icon">
+            <i class="pi pi-server"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Alterar Baas</span>
+          </div>
+          <button class="option-btn">Editar</button>
+        </div>
+
+        <div class="edit-option" (click)="handleEditOption('subaccount')">
+          <div class="option-icon">
+            <i class="pi pi-eye"></i>
+          </div>
+          <div class="option-content">
+            <span class="option-title">Visualizar Subconta</span>
+          </div>
+          <button class="option-btn secondary">Visualizar</button>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="feesDialogVisible" title="Alterar Taxas" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleFeesDialogAction($event)" width="800px" maxHeight="90vh">
+
+    <div class="fees-content">
+      <div class="fees-section">
+        <h4>Meios de Pagamentos</h4>
+        <div class="payment-methods">
+          <div class="payment-method">
+            <i class="pi pi-credit-card"></i>
+            <span>Cartão de crédito</span>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.creditCard">
+          </div>
+
+          <div class="payment-method">
+            <i class="pi pi-mobile"></i>
+            <span>PIX</span>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.pix">
+          </div>
+
+          <div class="payment-method">
+            <i class="pi pi-file"></i>
+            <span>Boleto</span>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.boleto">
+          </div>
+        </div>
+      </div>
+
+      <div class="fees-section">
+        <h4>Taxas do cartão</h4>
+        <div class="card-fees">
+          <div class="fee-row">
+            <span>Cartão taxa fixa</span>
+            <span class="fee-value">{{ fmt(companyFees.cardFees.fixedFee, 'currency') }}</span>
+          </div>
+
+          <div class="installments-grid">
+            <div *ngFor="let installment of cardFeesEntries" class="installment-row">
+              <span>Cartão {{ installment.key }}</span>
+              <span class="fee-value">{{ installment.value }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fees-section">
+        <h4>Taxas para PIX</h4>
+        <div class="pix-fees">
+          <div class="fee-row">
+            <span>PIX taxa fixa</span>
+            <span class="fee-value">{{ fmt(companyFees.pixFees.fixedFee, 'currency') }}</span>
+          </div>
+          <div class="fee-row">
+            <span>PIX taxa variável</span>
+            <span class="fee-value">{{ companyFees.pixFees.variableFee }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fees-section">
+        <h4>Taxas para boletos</h4>
+        <div class="boleto-fees">
+          <div class="fee-row">
+            <span>Boleto taxa fixa</span>
+            <span class="fee-value">{{ fmt(companyFees.boletoFees.fixedFee, 'currency') }}</span>
+          </div>
+          <div class="fee-row">
+            <span>Boleto taxa variável</span>
+            <span class="fee-value">{{ companyFees.boletoFees.variableFee }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="permissionsDialogVisible" title="Alterar Permissões" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Cancelar', type:'text'}
+    ]" (action)="handlePermissionsDialogAction($event)" width="700px">
+
+    <div class="permissions-content">
+      <div class="permissions-section">
+        <h4>Métodos de Pagamento</h4>
+        <div class="permissions-grid">
+          <div class="permission-item">
+            <div class="permission-info">
+              <i class="pi pi-credit-card"></i>
+              <span>Cartão de Crédito</span>
+            </div>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.creditCard">
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-info">
+              <i class="pi pi-mobile"></i>
+              <span>PIX</span>
+            </div>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.pix">
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-info">
+              <i class="pi pi-file"></i>
+              <span>Boleto</span>
+            </div>
+            <input type="checkbox" [(ngModel)]="companyPermissions.paymentMethods.boleto">
+          </div>
+        </div>
+      </div>
+
+      <div class="permissions-section">
+        <h4>Funcionalidades</h4>
+        <div class="permissions-grid">
+          <div class="permission-item">
+            <div class="permission-info">
+              <i class="pi pi-send"></i>
+              <span>Transferências</span>
+            </div>
+            <input type="checkbox" [(ngModel)]="companyPermissions.features.transfers">
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-info">
+              <i class="pi pi-wallet"></i>
+              <span>Saques</span>
+            </div>
+            <input type="checkbox" [(ngModel)]="companyPermissions.features.withdrawals">
+          </div>
+        </div>
+      </div>
+
+      <div class="permissions-section">
+        <h4>Limites</h4>
+        <div class="limits-grid">
+          <div class="limit-item">
+            <label>Limite Diário</label>
+            <input type="number" [(ngModel)]="companyPermissions.limits.dailyLimit">
+          </div>
+
+          <div class="limit-item">
+            <label>Limite Mensal</label>
+            <input type="number" [(ngModel)]="companyPermissions.limits.monthlyLimit">
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="financialReservesDialogVisible" title="Reservas Financeiras" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Cancelar', type:'text'}
+    ]" (action)="handleFinancialReservesDialogAction($event)" width="800px">
+
+    <div class="reserves-content">
+      <div class="reserves-summary">
+        <div class="summary-card">
+          <h4>Reserva Atual</h4>
+          <span class="amount">{{ fmt(financialReserves.currentReserve, 'currency') }}</span>
+        </div>
+
+        <div class="summary-card">
+          <h4>Reserva Mínima</h4>
+          <span class="amount">{{ fmt(financialReserves.minimumReserve, 'currency') }}</span>
+        </div>
+
+        <div class="summary-card">
+          <h4>Percentual</h4>
+          <span class="amount">{{ financialReserves.reservePercentage }}%</span>
+        </div>
+      </div>
+
+      <div class="reserves-config">
+        <h4>Configurações</h4>
+        <div class="config-item">
+          <span>Reserva Automática</span>
+          <input type="checkbox" [(ngModel)]="financialReserves.autoReserve">
+        </div>
+
+        <div class="config-item">
+          <label>Percentual de Reserva</label>
+          <input type="number" [(ngModel)]="financialReserves.reservePercentage" min="0" max="100">
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="acquirerDialogVisible" title="Alterar Adquirente" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Cancelar', type:'text'}
+    ]" (action)="handleAcquirerDialogAction($event)" width="700px">
+
+    <div class="acquirer-content">
+      <div class="current-acquirer">
+        <h4>Adquirente Atual</h4>
+        <div class="acquirer-card active">
+          <div class="acquirer-info">
+            <i class="pi pi-building"></i>
+            <span>{{ currentAcquirerName }}</span>
+          </div>
+          <span class="status-badge active">Ativo</span>
+        </div>
+      </div>
+
+      <div class="available-acquirers">
+        <h4>Adquirentes Disponíveis</h4>
+        <div class="acquirers-grid">
+          <div *ngFor="let acquirer of acquirerSettings.availableAcquirers" class="acquirer-card"
+            [class.active]="acquirer.status === 'active'" (click)="changeAcquirer(acquirer.id)">
+            <div class="acquirer-info">
+              <i class="pi pi-building"></i>
+              <span>{{ acquirer.name }}</span>
+            </div>
+            <span class="status-badge" [class.active]="acquirer.status === 'active'">
+              {{ acquirer.status === 'active' ? 'Ativo' : 'Disponível' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="baasDialogVisible" title="Alterar BaaS" [actions]="[
+      {id:'save', label:'Salvar', type:'primary'},
+      {id:'close', label:'Cancelar', type:'text'}
+    ]" (action)="handleBaasDialogAction($event)" width="700px">
+
+    <div class="baas-content">
+      <div class="current-baas">
+        <h4>Provedor BaaS Atual</h4>
+        <div class="baas-card active">
+          <div class="baas-info">
+            <i class="pi pi-server"></i>
+            <span>{{ currentBaasProviderName }}</span>
+          </div>
+          <span class="status-badge active">Ativo</span>
+        </div>
+      </div>
+
+      <div class="available-baas">
+        <h4>Provedores Disponíveis</h4>
+        <div class="baas-grid">
+          <div *ngFor="let provider of baasSettings.availableProviders" class="baas-card"
+            [class.active]="provider.status === 'active'" (click)="changeBaasProvider(provider.id)">
+            <div class="baas-info">
+              <i class="pi pi-server"></i>
+              <span>{{ provider.name }}</span>
+            </div>
+            <span class="status-badge" [class.active]="provider.status === 'active'">
+              {{ provider.status === 'active' ? 'Ativo' : 'Disponível' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="subaccountDialogVisible" title="Visualizar Subconta" [actions]="[
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleSubaccountDialogAction($event)" width="800px">
+
+    <div class="subaccount-content">
+      <div class="account-info">
+        <div class="account-header">
+          <h4>Informações da Conta</h4>
+          <span class="account-status active">Ativa</span>
+        </div>
+
+        <div class="account-details">
+          <div class="detail-item">
+            <span class="label">Número da Conta:</span>
+            <span class="value">{{ subaccountData.accountNumber }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Agência:</span>
+            <span class="value">{{ subaccountData.agency }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="label">Saldo Atual:</span>
+            <span class="value balance">{{ fmt(subaccountData.balance, 'currency') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-transactions">
+        <h4>Transações Recentes</h4>
+        <div class="transactions-list">
+          <div *ngFor="let transaction of subaccountData.transactions" class="transaction-item">
+            <div class="transaction-info">
+              <span class="transaction-date">{{ transaction.date | date:'dd/MM/yyyy HH:mm' }}</span>
+              <span class="transaction-desc">{{ transaction.description }}</span>
+            </div>
+            <span class="transaction-amount" [class.credit]="transaction.type === 'credit'"
+              [class.debit]="transaction.type === 'debit'">
+              {{ transaction.type === 'credit' ? '+' : '' }}{{ fmt(transaction.amount, 'currency') }}
             </span>
           </div>
         </div>

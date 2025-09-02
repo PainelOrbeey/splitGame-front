@@ -37,6 +37,8 @@ export const routes: Routes = [
       { path: 'company-period', component: PeriodRevenueComponent },
       { path: 'profit-company', component: CompanyProfitComponent },
       { path: 'acquirer-revenue', component: AcquirerRevenueComponent },
+            { path: 'integrations', component: IntegrationsComponent },
+
 
     ]
   },
@@ -48,7 +50,6 @@ export const routes: Routes = [
       { path: 'transactions', component: WhiteLabelTransactionsComponent },
       { path: 'clients', component: WhiteLabelClientsComponent },
       { path: 'referrals', component: MyReferralsComponent },
-      { path: 'integrations', component: IntegrationsComponent },
       { path: 'receivables', component: ReceivablesComponent },
       { path: 'my-company', component: MyCompanyComponent }
     ]

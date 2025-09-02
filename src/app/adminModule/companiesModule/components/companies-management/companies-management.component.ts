@@ -2,17 +2,17 @@ import { Component, type OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import type { Company, CompanyFilters, CompanyMetrics } from "../../interfaces/company.interface"
-import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
-import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component"
-import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component"
-import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
 import { CustomDialogComponent } from "../../../../../shared/components/custom-dialog/custom-dialog.component"
+import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component"
+import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component"
+import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
+import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
 import { PaginationComponent } from "../../../../../shared/components/pagination/pagination.component"
 
 @Component({
   selector: "app-companies-management",
   standalone: true,
-  imports: [CommonModule, FormsModule,UserMenuComponent,SidebarFiltersComponent,FilterTabsComponent,SummaryCardComponent,CustomDialogComponent,PaginationComponent],
+  imports: [CommonModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent,PaginationComponent, SidebarFiltersComponent, CustomDialogComponent],
   templateUrl: "./companies-management.component.html",
   styleUrls: ["./companies-management.component.scss"],
 })
@@ -22,6 +22,19 @@ export class CompaniesManagementComponent implements OnInit {
   selectedCompany: Company | null = null
   sidebarVisible = false
   companyDialogVisible = false
+  editCompanyDialogVisible = false
+  editCompanyData: any = {}
+
+  // New dialog states
+  feesDialogVisible = false
+  permissionsDialogVisible = false
+  financialReservesDialogVisible = false
+  acquirerDialogVisible = false
+  baasDialogVisible = false
+  subaccountDialogVisible = false
+
+  // Current editing section
+  currentEditSection = ""
 
   filters: CompanyFilters = {
     search: "",
@@ -52,6 +65,116 @@ export class CompaniesManagementComponent implements OnInit {
   currentPage = 1
   itemsPerPage = 10
   totalItems = 0
+
+  // Company fees data
+  companyFees = {
+    cardFees: {
+      fixedFee: 1.99,
+      installments: {
+        "1x": 7.49,
+        "2x": 10.0,
+        "3x": 12.5,
+        "4x": 15.0,
+        "5x": 16.99,
+        "6x": 18.49,
+        "7x": 19.79,
+        "8x": 20.99,
+        "9x": 22.49,
+        "10x": 23.79,
+        "11x": 24.99,
+        "12x": 26.49,
+      },
+    },
+    pixFees: {
+      fixedFee: 1.0,
+      variableFee: 7.0,
+    },
+    boletoFees: {
+      fixedFee: 1.99,
+      variableFee: 2.49,
+    },
+    transferRules: {
+      enabled: true,
+      validation: true,
+      maxAmount: 5000,
+    },
+  }
+
+  // Company permissions
+  companyPermissions = {
+    paymentMethods: {
+      creditCard: true,
+      debitCard: true,
+      pix: true,
+      boleto: true,
+    },
+    features: {
+      transfers: true,
+      withdrawals: true,
+      reports: true,
+      api: true,
+    },
+    limits: {
+      dailyLimit: 50000,
+      monthlyLimit: 1000000,
+      transactionLimit: 10000,
+    },
+  }
+
+  // Financial reserves
+  financialReserves = {
+    currentReserve: 25000,
+    minimumReserve: 10000,
+    reservePercentage: 5,
+    autoReserve: true,
+    reserveHistory: [
+      { date: new Date("2024-01-15"), amount: 5000, type: "addition", reason: "Ajuste automático" },
+      { date: new Date("2024-01-10"), amount: -2000, type: "deduction", reason: "Chargeback" },
+    ],
+  }
+
+  // Acquirer settings
+  acquirerSettings = {
+    currentAcquirer: "stone",
+    availableAcquirers: [
+      { id: "stone", name: "Stone", status: "active" },
+      { id: "cielo", name: "Cielo", status: "available" },
+      { id: "rede", name: "Rede", status: "available" },
+      { id: "getnet", name: "Getnet", status: "available" },
+    ],
+    acquirerConfig: {
+      merchantId: "123456789",
+      apiKey: "***************",
+      environment: "production",
+    },
+  }
+
+  // BaaS settings
+  baasSettings = {
+    currentProvider: "dock",
+    availableProviders: [
+      { id: "dock", name: "Dock", status: "active" },
+      { id: "qitech", name: "QI Tech", status: "available" },
+      { id: "bankly", name: "Bankly", status: "available" },
+    ],
+    baasConfig: {
+      accountId: "ACC123456",
+      apiEndpoint: "https://api.dock.tech",
+      webhookUrl: "https://webhook.empresa.com",
+    },
+  }
+
+  // Subaccount data
+  subaccountData = {
+    accountNumber: "12345-6",
+    agency: "0001",
+    balance: 15750.5,
+    status: "active",
+    transactions: [
+      { id: "1", date: new Date(), type: "credit", amount: 1500, description: "Venda PIX" },
+      { id: "2", date: new Date(), type: "debit", amount: -50, description: "Taxa de transferência" },
+    ],
+  }
 
   ngOnInit() {
     this.loadCompanies()
@@ -267,11 +390,184 @@ export class CompaniesManagementComponent implements OnInit {
     this.companyDialogVisible = true
   }
 
+  editCompany(company: Company) {
+    this.selectedCompany = company
+    this.editCompanyData = {
+      paymentMethods: {
+        creditCard: true,
+        boleto: true,
+        pix: true,
+      },
+      security: {
+        apiKeys: "***************",
+        advancedSettings: false,
+      },
+      transferRules: {
+        transferEnabled: true,
+        transferValidation: true,
+        sendForAnalysis: false,
+      },
+      fees: {
+        fixedFee: 1.0,
+        variableFee: 0.5,
+        maxTransferValue: 5000,
+      },
+      cardFees: {
+        fixedFee: 1.99,
+        installments: {
+          "1x": 7.49,
+          "2x": 10.0,
+          "3x": 12.5,
+          "4x": 15.0,
+          "5x": 16.99,
+          "6x": 18.49,
+          "7x": 19.79,
+          "8x": 20.99,
+          "9x": 22.49,
+          "10x": 23.79,
+          "11x": 24.99,
+          "12x": 26.49,
+        },
+      },
+      pixFees: {
+        fixedFee: 1.0,
+        variableFee: 7.0,
+      },
+      boletoFees: {
+        fixedFee: 1.99,
+        variableFee: 2.49,
+      },
+    }
+    this.editCompanyDialogVisible = true
+  }
+
   handleDialogAction(action: any) {
     if (action.id === "close") {
       this.companyDialogVisible = false
       this.selectedCompany = null
     }
+  }
+
+  handleEditDialogAction(action: any) {
+    if (action.id === "close") {
+      this.editCompanyDialogVisible = false
+      this.selectedCompany = null
+    } else if (action.id === "save") {
+      // Save company changes
+      console.log("Saving company changes:", this.editCompanyData)
+      this.editCompanyDialogVisible = false
+      this.selectedCompany = null
+    }
+  }
+
+  // Handle edit option clicks
+  handleEditOption(option: string) {
+    this.currentEditSection = option
+
+    switch (option) {
+      case "fees":
+        this.feesDialogVisible = true
+        break
+      case "permissions":
+        this.permissionsDialogVisible = true
+        break
+      case "reserves":
+        this.financialReservesDialogVisible = true
+        break
+      case "acquirer":
+        this.acquirerDialogVisible = true
+        break
+      case "baas":
+        this.baasDialogVisible = true
+        break
+      case "subaccount":
+        this.subaccountDialogVisible = true
+        break
+    }
+  }
+
+  // Handle fees dialog actions
+  handleFeesDialogAction(action: any) {
+    if (action.id === "save") {
+      console.log("Saving fees:", this.companyFees)
+      this.feesDialogVisible = false
+    } else if (action.id === "close") {
+      this.feesDialogVisible = false
+    }
+  }
+
+  // Handle permissions dialog actions
+  handlePermissionsDialogAction(action: any) {
+    if (action.id === "save") {
+      console.log("Saving permissions:", this.companyPermissions)
+      this.permissionsDialogVisible = false
+    } else if (action.id === "close") {
+      this.permissionsDialogVisible = false
+    }
+  }
+
+  // Handle financial reserves dialog actions
+  handleFinancialReservesDialogAction(action: any) {
+    if (action.id === "save") {
+      console.log("Saving financial reserves:", this.financialReserves)
+      this.financialReservesDialogVisible = false
+    } else if (action.id === "close") {
+      this.financialReservesDialogVisible = false
+    }
+  }
+
+  // Handle acquirer dialog actions
+  handleAcquirerDialogAction(action: any) {
+    if (action.id === "save") {
+      console.log("Saving acquirer settings:", this.acquirerSettings)
+      this.acquirerDialogVisible = false
+    } else if (action.id === "close") {
+      this.acquirerDialogVisible = false
+    }
+  }
+
+  // Handle BaaS dialog actions
+  handleBaasDialogAction(action: any) {
+    if (action.id === "save") {
+      console.log("Saving BaaS settings:", this.baasSettings)
+      this.baasDialogVisible = false
+    } else if (action.id === "close") {
+      this.baasDialogVisible = false
+    }
+  }
+
+  // Handle subaccount dialog actions
+  handleSubaccountDialogAction(action: any) {
+    if (action.id === "close") {
+      this.subaccountDialogVisible = false
+    }
+  }
+
+  // Change acquirer
+  changeAcquirer(acquirerId: string) {
+    this.acquirerSettings.currentAcquirer = acquirerId
+    this.acquirerSettings.availableAcquirers.forEach((acq) => {
+      acq.status = acq.id === acquirerId ? "active" : "available"
+    })
+  }
+
+  // Change BaaS provider
+  changeBaasProvider(providerId: string) {
+    this.baasSettings.currentProvider = providerId
+    this.baasSettings.availableProviders.forEach((provider) => {
+      provider.status = provider.id === providerId ? "active" : "available"
+    })
+  }
+
+  // Add financial reserve
+  addFinancialReserve(amount: number, reason: string) {
+    this.financialReserves.reserveHistory.unshift({
+      date: new Date(),
+      amount: amount,
+      type: amount > 0 ? "addition" : "deduction",
+      reason: reason,
+    })
+    this.financialReserves.currentReserve += amount
   }
 
   fmt(value: number, type: "int" | "currency" | "percent" = "int", min = 0, max = 0): string {
@@ -320,5 +616,20 @@ export class CompaniesManagementComponent implements OnInit {
     const start = (this.currentPage - 1) * this.itemsPerPage
     const end = start + this.itemsPerPage
     return this.filteredCompanies.slice(start, end)
+  }
+
+  // Getters for template performance
+  get currentAcquirerName(): string {
+    return (
+      this.acquirerSettings.availableAcquirers.find((a) => a.id === this.acquirerSettings.currentAcquirer)?.name || ""
+    )
+  }
+
+  get currentBaasProviderName(): string {
+    return this.baasSettings.availableProviders.find((p) => p.id === this.baasSettings.currentProvider)?.name || ""
+  }
+
+  get cardFeesEntries(): Array<{ key: string; value: number }> {
+    return Object.entries(this.companyFees.cardFees.installments).map(([key, value]) => ({ key, value }))
   }
 }

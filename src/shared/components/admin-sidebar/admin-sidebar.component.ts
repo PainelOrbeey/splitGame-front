@@ -64,6 +64,11 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       route: "/admin/all-advances",
     },
     {
+      label: "Integrações",
+      icon: "pi pi-microchip",
+      route: "/admin/integrations",
+    },
+    {
       label: "Relatórios Financeiros",
       icon: "pi pi-chart-line",
       expanded: false,
@@ -96,11 +101,6 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       label: "Meus Referidos",
       icon: "pi pi-users",
       route: "/company/referrals",
-    },
-    {
-      label: "Integrações",
-      icon: "pi pi-microchip",
-      route: "/company/integrations",
     },
     {
       label: "Meus Recebíveis",
