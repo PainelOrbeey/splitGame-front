@@ -17,6 +17,10 @@ import { MyReferralsComponent } from './CompanyModule/referralsModule/components
 import { IntegrationsComponent } from './CompanyModule/integrationsModule/components/integrations/integrations.component';
 import { ReceivablesComponent } from './CompanyModule/receivablesModule/components/receivables/receivables.component';
 import { MyCompanyComponent } from './CompanyModule/companyModule/components/my-company/my-company.component';
+import { ReceiverBankComponent } from './CompanyModule/receiverBankModule/components/receiver-bank/receiver-bank.component';
+import { AvailableBalanceComponent } from './CompanyModule/availableBalanceModule/components/available-balance/available-balance.component';
+import { CashoutComponent } from './CompanyModule/cashoutModule/components/cashout/cashout.component';
+import { TransfersComponent } from './CompanyModule/transfersModule/components/transfers/transfers.component';
 
 
 export const routes: Routes = [
@@ -48,10 +52,18 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: WhiteLabelDashboardComponent },
       { path: 'transactions', component: WhiteLabelTransactionsComponent },
-      { path: 'clients', component: WhiteLabelClientsComponent },
-      { path: 'referrals', component: MyReferralsComponent },
+      // { path: 'clients', component: WhiteLabelClientsComponent },
+      // { path: 'referrals', component: MyReferralsComponent },
       { path: 'receivables', component: ReceivablesComponent },
-      { path: 'my-company', component: MyCompanyComponent }
+      { path: 'my-company', component: MyCompanyComponent },
+      { path: 'bank', component: ReceiverBankComponent },
+      { path: 'saque-balance', component: AvailableBalanceComponent },
+      { path: 'cashout', component: CashoutComponent },
+      {
+        path: 'transfers',
+        component: TransfersComponent
+      }
+
     ]
   },
   { path: '**', redirectTo: 'home/dashboard' }

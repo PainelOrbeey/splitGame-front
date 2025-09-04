@@ -1,0 +1,210 @@
+<div class="container-wrapper">
+  <header class="header">
+    <div class="header-content">
+      <h2>Cashout ({{ filteredCashouts.length }}) registro{{ filteredCashouts.length !== 1 ? 's' : '' }}</h2>
+      <div class="auto-refresh">
+        <i class="pi pi-refresh" [class.spinning]="isLoading"></i>
+        <span>Atualização a todo momento</span>
+      </div>
+    </div>
+    <app-user-menu [username]="'Sistema White Label'" [email]="'whitelabel@sistema.com'" [saldo]="25000"
+      [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <!-- Filter Tabs -->
+
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Cashouts" [value]="metrics.totalCashouts.toString()"
+      icon="pi pi-money-bill">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Pendentes" [value]="metrics.pendingCashouts.toString()"
+      icon="pi pi-clock">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Concluídos" [value]="metrics.completedCashouts.toString()"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total Sacado" [value]="fmt(metrics.totalAmount)" icon="pi pi-wallet">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total em Taxas" [value]="fmt(metrics.totalFees)" icon="pi pi-percentage">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Cancelados" [value]="metrics.cancelledCashouts.toString()"
+      icon="pi pi-times-circle">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos', value: '' },
+        { label: 'Pendentes', value: 'PENDENTE' },
+        { label: 'Processando', value: 'PROCESSANDO' },
+        { label: 'Concluídos', value: 'CONCLUIDO' },
+        { label: 'Cancelados', value: 'CANCELADO' },
+        { label: 'Erro', value: 'ERRO' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar cashout, cliente ou descrição…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <!-- Action Button -->
+  <div class="action-buttons-row">
+    <button class="btn-primary" (click)="refreshData()" [disabled]="isLoading">
+      <i class="pi pi-refresh" [class.spinning]="isLoading"></i>
+      {{ isLoading ? 'Atualizando...' : 'Atualizar Dados' }}
+    </button>
+  </div>
+
+  <!-- Cashouts Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Cashouts</h3>
+    </div>
+
+    <div class="table-scroll" *ngIf="!isLoading">
+      <table class="user-table" *ngIf="paginatedCashouts.length > 0; else noResults">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Descrição</th>
+            <th>Status</th>
+            <th>Método</th>
+            <th>Taxa</th>
+            <th>Criado Em</th>
+            <th>Referência</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cashout of paginatedCashouts">
+            <td>
+              <div class="client-info">
+                <strong>{{ cashout.client }}</strong>
+                <small>{{ cashout.destination }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="amount">{{ fmt(cashout.total) }}</span>
+            </td>
+            <td>
+              <div class="description">
+                {{ cashout.description }}
+              </div>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(cashout.status)">
+                {{ cashout.status }}
+              </span>
+            </td>
+            <td>
+              <span class="payment-method">{{ cashout.paymentMethod || '-' }}</span>
+            </td>
+            <td>{{ fmt(cashout.fee || 0) }}</td>
+            <td>{{ cashout.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="reference">{{ cashout.reference || '-' }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <ng-template #noResults>
+        <div class="no-results">
+          <i class="pi pi-search"></i>
+          <h3>Sem resultados aparente</h3>
+          <p>Nenhum cashout encontrado com os filtros aplicados.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>Carregando cashouts...</p>
+    </div>
+
+
+  </div>
+  <orb-pagination *ngIf="!isLoading && paginatedCashouts.length > 0" [currentPage]="currentPage"
+    [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Cashouts</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Busca Geral</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()"
+          placeholder="ID, cliente, descrição...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="PENDENTE">Pendente</option>
+          <option value="PROCESSANDO">Processando</option>
+          <option value="CONCLUIDO">Concluído</option>
+          <option value="CANCELADO">Cancelado</option>
+          <option value="ERRO">Erro</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Cliente</span>
+        <input type="text" [(ngModel)]="filters.client" (input)="applyFilters()" placeholder="Nome do cliente">
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="PIX">PIX</option>
+          <option value="TED">TED</option>
+          <option value="DOC">DOC</option>
+          <option value="Transferência">Transferência</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+</div>

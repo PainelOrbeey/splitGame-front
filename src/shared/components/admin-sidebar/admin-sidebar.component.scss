@@ -131,13 +131,13 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       opacity: 1;
       transition: opacity 0.2s;
-      color: black;
+      color: var(--text-main);
     }
 
     i {
       font-size: 1.2rem;
       transition: color $transition;
-      color: black;
+      color: var(--text-main);
     }
 
     &:hover {
@@ -253,6 +253,7 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.5rem;
   border-radius: 50%;
   transition: background-color 0.2s;
+  color: var(--text-main);
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -272,7 +273,7 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  color: black;
+  color: var(--text-main);
   cursor: pointer;
   transition: background 0.3s;
 
@@ -291,7 +292,6 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   a {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
-
     i {
       font-size: 1rem;
     }
@@ -311,5 +311,20 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   nav::-webkit-scrollbar,
   footer::-webkit-scrollbar {
     display: none;
+  }
+}
+.light-only {
+  display: block;
+}
+.dark-only {
+  display: none;
+}
+
+:host-context(.dark) {
+  .light-only {
+    display: none;
+  }
+  .dark-only {
+    display: block;
   }
 }
