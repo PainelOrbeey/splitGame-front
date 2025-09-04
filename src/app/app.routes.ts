@@ -21,6 +21,8 @@ import { ReceiverBankComponent } from './CompanyModule/receiverBankModule/compon
 import { AvailableBalanceComponent } from './CompanyModule/availableBalanceModule/components/available-balance/available-balance.component';
 import { CashoutComponent } from './CompanyModule/cashoutModule/components/cashout/cashout.component';
 import { TransfersComponent } from './CompanyModule/transfersModule/components/transfers/transfers.component';
+import { WebhooksComponent } from './CompanyModule/webhooksModule/components/webhooks/webhooks.component';
+import { PaymentLinksComponent } from './CompanyModule/paymentLinksModule/components/payment-links/payment-links.component';
 
 
 export const routes: Routes = [
@@ -62,7 +64,9 @@ export const routes: Routes = [
       {
         path: 'transfers',
         component: TransfersComponent
-      }
+      },
+      { path: 'webhooks', component: WebhooksComponent },
+      { path: 'payment-links', component: PaymentLinksComponent }
 
     ]
   },

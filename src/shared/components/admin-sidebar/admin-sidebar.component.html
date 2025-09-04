@@ -2,15 +2,16 @@
 
   <div class="header">
     <ng-container *ngIf="!collapsed; else smallLogo">
-      <img src="/logo-preta.png" alt="Orbeey" class="logo light-only" />
-      <img src="/logo_colored.png" alt="Orbeey" class="logo dark-only" />
+      <img src="/orbeey-azul.png" alt="Orbeey" class="logo" />
     </ng-container>
     <ng-template #smallLogo>
-      <img src="/icon_colored.png" alt="Orbeey" class="logo-icon" />
+      <img src="/o-orbeet.png" alt="Orbeey" class="logo-icon" />
     </ng-template>
 
     <i class="pi toggle-icon" [ngClass]="collapsed ? 'pi-chevron-right' : 'pi-bars'" (click)="toggle()"></i>
   </div>
+
+
 
   <nav class="orb-menu">
     <ul class="menu-list">

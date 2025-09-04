@@ -78,10 +78,10 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
   }
 
   brandOverviewItems: BrandOverviewItem[] = [
-    { label: "Tecnologia", percentage: 35, color: "#0048ff" },
-    { label: "E-commerce", percentage: 28, color: "#00c896" },
-    { label: "Educação", percentage: 22, color: "#ff9500" },
-    { label: "Outros", percentage: 15, color: "#e5e7eb" },
+    { label: "Píx", percentage: 35, color: "#0048ff" },
+    { label: "Cartão", percentage: 28, color: "#00c896" },
+    { label: "Boleto", percentage: 22, color: "#ff9500" },
+    { label: "Charge Back", percentage: 15, color: "#e5e7eb" },
   ]
 
   metricCards: MetricCard[] = [
@@ -95,7 +95,7 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
       chartData: [45, 52, 38, 65, 49, 75, 120, 68, 55, 62, 48, 35, 58, 72],
     },
     {
-      title: "Receita White Label",
+      title: "Faturamento",
       value: "R$ 89.450",
       change: "+24%",
       changeType: "positive",
@@ -104,8 +104,8 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
       chartData: [65, 72, 68, 75, 82, 88, 95, 102],
     },
     {
-      title: "Marcas Ativas",
-      value: "342",
+      title: "Ticket Médio",
+      value: "R$ 342",
       change: "+12%",
       changeType: "positive",
       period: "vs anterior, 30 dias",
@@ -140,10 +140,10 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
   ]
 
   brandCategoryItems: BrandCategoryItem[] = [
-    { name: "Tecnologia", percentage: 35, partners: "120 Parceiros Ativos" },
-    { name: "E-commerce", percentage: 28, partners: "96 Parceiros Ativos" },
-    { name: "Educação", percentage: 22, partners: "75 Parceiros Ativos" },
-    { name: "Outros", percentage: 15, partners: "51 Parceiros Ativos" },
+    { name: "Píx", percentage: 35, partners: "120 Parceiros Ativos" },
+    { name: "Cartão", percentage: 28, partners: "96 Parceiros Ativos" },
+    { name: "Boleto", percentage: 22, partners: "75 Parceiros Ativos" },
+    { name: "Charge Back", percentage: 15, partners: "51 Parceiros Ativos" },
   ]
 
   recentPartners: RecentPartner[] = [

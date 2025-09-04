@@ -1,0 +1,322 @@
+<div class="container-wrapper">
+  <div class="header">
+    <h2>Webhooks ({{ filteredWebhooks.length }}) registros</h2>
+
+    <app-user-menu [username]="'Admin White Label'" [email]="'admin@whitelabel.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </div>
+  <div class="header-actions">
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="pi pi-plus"></i>
+      Criar Webhook
+    </button>
+  </div>
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Status</label>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+          <option value="erro">Erro</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Tipo</label>
+        <select [(ngModel)]="filters.type" (change)="applyFilters()">
+          <option value="">Todos os tipos</option>
+          <option *ngFor="let type of webhookTypes" [value]="type.id">
+            {{ type.name }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading">
+    <div class="table-scroll">
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Último Disparo</th>
+            <th>Criado em</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let webhook of paginatedWebhooks">
+            <td>
+              <div class="webhook-url">
+                <span class="url">{{ webhook.url }}</span>
+                <button class="btn-copy" (click)="copyWebhookUrl(webhook)" title="Copiar URL">
+                  <i class="pi pi-copy"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="webhook-type">
+                <strong>{{ webhook.type.name }}</strong>
+                <small>{{ webhook.type.description }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + webhook.status">
+                <i class="pi" [ngClass]="getStatusIcon(webhook.status)"></i>
+                {{ webhook.status }}
+              </span>
+            </td>
+            <td>
+              <span *ngIf="webhook.lastTriggered; else neverTriggered">
+                {{ formatDate(webhook.lastTriggered) }}
+              </span>
+              <ng-template #neverTriggered>
+                <span class="text-muted">Nunca</span>
+              </ng-template>
+            </td>
+            <td>{{ formatDate(webhook.createdAt) }}</td>
+            <td>
+              <div class="actions">
+                <button class="btn-icon" (click)="openDetailsModal(webhook)" title="Detalhes">
+                  <i class="pi pi-eye"></i>
+                </button>
+                <button class="btn-icon" (click)="openEventsModal(webhook)" title="Eventos">
+                  <i class="pi pi-list"></i>
+                </button>
+                <button class="btn-icon" (click)="testWebhook(webhook)" [disabled]="testing" title="Testar Webhook">
+                  <i class="pi pi-play" *ngIf="!testing"></i>
+                  <i class="pi pi-spin pi-spinner" *ngIf="testing"></i>
+                </button>
+                <button class="btn-icon" (click)="toggleStatus(webhook)" title="Alterar Status">
+                  <i class="pi pi-power-off"></i>
+                </button>
+                <button class="btn-icon danger" (click)="deleteWebhook(webhook)" title="Excluir">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Carregando webhooks...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredWebhooks.length === 0">
+    <i class="pi pi-send"></i>
+    <h3>Sem resultados</h3>
+    <p>Nenhum webhook encontrado com os filtros aplicados.</p>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="pi pi-plus"></i>
+      Criar Primeiro Webhook
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && filteredWebhooks.length > 0">
+    <button class="btn-pagination" (click)="previousPage()" [disabled]="currentPage === 1">
+      Anterior
+    </button>
+
+    <div class="page-numbers">
+      <button *ngFor="let page of [].constructor(totalPages); let i = index" class="btn-page"
+        [ngClass]="{ active: currentPage === i + 1 }" (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+
+    <button class="btn-pagination" (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Próximo
+    </button>
+  </div>
+</div>
+
+<!-- Create Webhook Modal -->
+<app-custom-dialog [(visible)]="showCreateModal" title="Criar Webhook" width="500px" [actions]="[
+    { label: 'Cancelar', type: 'text', id: 'cancel' },
+    { label: creating ? 'Criando...' : 'Salvar', type: 'primary', id: 'create' }
+  ]" (action)="$event === 'create' ? createWebhook() : null">
+  <div class="create-webhook-content">
+    <p class="description">
+      Após criar seu webhook, você receberá qualquer criação/atualização dessa entidade em sua API.
+    </p>
+
+    <form class="create-form">
+      <div class="form-group">
+        <label for="type">Tipo</label>
+        <select id="type" [(ngModel)]="newWebhook.type" name="type" required>
+          <option value="">Selecione uma opção</option>
+          <option *ngFor="let type of webhookTypes" [value]="type.id">
+            {{ type.name }} - {{ type.description }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="url">URL</label>
+        <input id="url" type="url" [(ngModel)]="newWebhook.url" name="url" placeholder="http://example.com/webhook"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="secret">Secret (Opcional)</label>
+        <input id="secret" type="text" [(ngModel)]="newWebhook.secret" name="secret"
+          placeholder="Chave secreta para validação">
+        <small class="help-text">
+          Use para validar a autenticidade dos webhooks recebidos
+        </small>
+      </div>
+    </form>
+  </div>
+</app-custom-dialog>
+
+<!-- Details Modal -->
+<app-custom-dialog [(visible)]="showDetailsModal" title="Detalhes do Webhook" width="" [actions]="[
+    { label: 'Fechar', type: 'text', id: 'close' }
+  ]">
+  <div class="details-content" *ngIf="selectedWebhook">
+    <div class="details-grid">
+      <div class="detail-section">
+        <h4>Informações Básicas</h4>
+        <div class="detail-row">
+          <span class="label">URL:</span>
+          <span class="value">{{ selectedWebhook.url }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Tipo:</span>
+          <span class="value">{{ selectedWebhook.type.name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="status-badge" [ngClass]="'status-' + selectedWebhook.status">
+            <i class="pi" [ngClass]="getStatusIcon(selectedWebhook.status)"></i>
+            {{ selectedWebhook.status }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Criado em:</span>
+          <span class="value">{{ formatDate(selectedWebhook.createdAt) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Último disparo:</span>
+          <span class="value">
+            {{ selectedWebhook.lastTriggered ? formatDate(selectedWebhook.lastTriggered) : 'Nunca' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Configurações</h4>
+        <div class="detail-row">
+          <span class="label">Tentativas:</span>
+          <span class="value">{{ selectedWebhook.retryCount }}/{{ selectedWebhook.maxRetries }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Secret:</span>
+          <span class="value">{{ selectedWebhook.secret ? '••••••••••••' : 'Não configurado' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Eventos:</span>
+          <div class="events-list">
+            <span *ngFor="let event of selectedWebhook.type.events" class="event-tag">
+              {{ event }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="webhook-actions">
+      <button class="btn-secondary" (click)="testWebhook(selectedWebhook)">
+        <i class="pi pi-play"></i>
+        Testar Webhook
+      </button>
+      <button class="btn-secondary" (click)="copyWebhookUrl(selectedWebhook)">
+        <i class="pi pi-copy"></i>
+        Copiar URL
+      </button>
+      <button class="btn-secondary" (click)="openEventsModal(selectedWebhook)">
+        <i class="pi pi-list"></i>
+        Ver Eventos
+      </button>
+      <button class="btn-danger" (click)="deleteWebhook(selectedWebhook)">
+        <i class="pi pi-trash"></i>
+        Excluir
+      </button>
+    </div>
+  </div>
+</app-custom-dialog>
+
+<!-- Events Modal -->
+<app-custom-dialog [(visible)]="showEventsModal" title="Eventos do Webhook" width="900px" [actions]="[
+    { label: 'Fechar', type: 'text', id: 'close' }
+  ]">
+  <div class="events-content">
+    <div class="events-header">
+      <h4>Histórico de Eventos</h4>
+      <p>Últimos eventos disparados para este webhook</p>
+    </div>
+
+    <div class="events-table" *ngIf="selectedEvents.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Evento</th>
+            <th>Status</th>
+            <th>Resposta</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let event of selectedEvents">
+            <td>
+              <div class="event-info">
+                <strong>{{ event.eventType }}</strong>
+                <small>ID: {{ event.id }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + event.status">
+                {{ event.status }}
+              </span>
+            </td>
+            <td>
+              <span class="response-code"
+                [ngClass]="event.responseCode ? (event.responseCode >= 200 && event.responseCode < 300 ? 'success' : 'error') : 'unknown'">
+                {{ event.responseCode || '-' }}
+              </span>
+            </td>
+            <td>{{ formatDate(event.createdAt) }}</td>
+            <td>
+              <button class="btn-icon" title="Ver Payload">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button class="btn-icon" *ngIf="event.status === 'failed'" title="Retentar">
+                <i class="pi pi-refresh"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-events" *ngIf="selectedEvents.length === 0">
+      <i class="pi pi-inbox"></i>
+      <p>Nenhum evento encontrado para este webhook</p>
+    </div>
+  </div>
+</app-custom-dialog>

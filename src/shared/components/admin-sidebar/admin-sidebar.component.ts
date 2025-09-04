@@ -92,20 +92,7 @@ private userMenu: NavItem[] = [
     icon: "pi pi-credit-card",
     route: "/company/transactions",
   },
-  // {
-  //   label: "Meus Recebíveis",
-  //   icon: "pi pi-money-bill",
-  //   route: "/company/receivables",
-  // },
-  {
-    label: "Recebedores",
-    icon: "pi pi-briefcase", // você pode trocar o ícone
-    children: [
-      // {
-      //   label: "Antecipações",
-      //   icon: "pi pi-clock",
-      //   route: "/company/antecipacoes",
-      // },
+
       {
         label: "Bancos",
         icon: "pi pi-dollar",
@@ -126,7 +113,13 @@ private userMenu: NavItem[] = [
         icon: "pi pi-arrow-right-arrow-left",
         route: "/company/cashout",
       },
-    ],
+      { label: "Webhooks",
+        icon: "pi pi-bell",
+        route: "/company/webhooks",
+  },
+      { label: "Links de Pagamento",
+        icon: "pi pi-link",
+        route: "/company/payment-links",
   },
 ];
 
