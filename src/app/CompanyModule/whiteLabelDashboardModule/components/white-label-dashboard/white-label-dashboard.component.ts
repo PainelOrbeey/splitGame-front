@@ -397,11 +397,11 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
   getStatusLabel(status: string): string {
     switch (status) {
       case "active":
-        return "Ativo"
+        return "Pago"
       case "pending":
         return "Pendente"
       case "inactive":
-        return "Inativo"
+        return "Recusado"
       default:
         return status
     }
