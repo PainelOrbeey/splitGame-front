@@ -86,7 +86,7 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
 
   metricCards: MetricCard[] = [
     {
-      title: "Parceiros Totais",
+      title: "Totais de Pedidos pagos",
       value: "1.248",
       change: "+18%",
       changeType: "positive",
