@@ -113,7 +113,7 @@ export class WhiteLabelDashboardComponent implements OnInit, AfterViewInit {
       chartData: [28, 35, 42, 48, 55, 62, 68, 75],
     },
     {
-      title: "Customizações",
+      title: "Pix",
       value: "1.856",
       change: "+8%",
       changeType: "positive",
