@@ -1,0 +1,256 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // background: url('/background-left-login.png') center/cover no-repeat;
+  color: #000;
+  background-color: #000;
+
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  background: url('/background-left-login.png') center/cover no-repeat;
+  opacity: 0.5;
+  pointer-events: none;
+  transform: scaleX(-1);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 70rem;
+  background: #fff;
+  border-radius: 1.5rem;
+  margin: 2.5rem;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+  }
+}
+
+.left-side {
+  display: none;
+
+  @media (min-width: 1024px) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2.5rem;
+    background-color: #272727;
+    background: url('/background-left-login.png') center/cover no-repeat;
+    color: #fff;
+    border-radius: 1.5rem 0 0 1.5rem;
+    position: relative;
+  }
+
+  .welcome-text {
+    position: relative;
+    z-index: 10;
+    text-align: right;
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      color: #9ca3af;
+    }
+  }
+
+  .rocket {
+    position: absolute;
+    bottom: 0rem;
+    left: 20%;
+    transform: translateX(-50%);
+    width: 30rem;
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5));
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .create-account {
+    position: relative;
+    z-index: 10;
+    text-align: right;
+
+    a {
+      color: #00e189;
+      text-decoration: underline;
+    }
+  }
+}
+
+.right-side {
+  flex: 1;
+  padding: 2.5rem;
+  font-family: 'Montserrat', sans-serif;
+
+  .title {
+    text-align: center;
+    font-size: 1.125rem;
+    margin-bottom: 2.5rem;
+    color: #000;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-top: 0.25rem;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .error {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .required {
+      color: #ef4444;
+    }
+  }
+
+  .password-wrapper {
+    position: relative;
+
+    .toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+    }
+  }
+
+  .forgot {
+    text-align: right;
+    font-size: 0.875rem;
+
+    a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+  }
+
+  .login-btn {
+    width: 100%;
+    background: #1d4ed8;
+    color: #fff;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-top: 1.25rem;
+    cursor: pointer;
+    border: none;
+    transition: background 0.3s;
+
+    &:hover {
+      background: #1e40af;
+    }
+  }
+
+  .mobile-create {
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+
+    @media (min-width: 1024px) {
+      display: none;
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+  }
+
+  .terms {
+    font-size: 0.75rem;
+    text-align: center;
+    margin-top: 2.5rem;
+    color: #4b5563;
+    font-weight: 600;
+
+    a {
+      text-decoration: underline;
+      color: #2563eb;
+    }
+  }
+
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+
+    .dialog {
+      background: #fff;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 24rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+      h2 {
+        font-size: 1.125rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        margin-bottom: 1rem;
+      }
+
+      button {
+        background: #1d4ed8;
+        color: #fff;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          background: #1e40af;
+        }
+      }
+    }
+  }
+
+  .error {
+    color: #ef4444;
+    margin-top: 0.5rem;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-10px);
+  }
+}

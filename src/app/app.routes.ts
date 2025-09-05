@@ -17,11 +17,12 @@ import { MyReferralsComponent } from './CompanyModule/referralsModule/components
 import { IntegrationsComponent } from './CompanyModule/integrationsModule/components/integrations/integrations.component';
 import { ReceivablesComponent } from './CompanyModule/receivablesModule/components/receivables/receivables.component';
 import { MyCompanyComponent } from './CompanyModule/companyModule/components/my-company/my-company.component';
+import { LoginComponent } from './CompanyModule/loginModule/components/login/login.component';
 
 
 export const routes: Routes = [
   { path: '', redirectTo: 'admin/dashboard', pathMatch: 'full' },
-  // { path: 'login', component: LoginComponent },
+  {path: 'login', component:LoginComponent},
   {
     path: 'admin',
     component: HomeComponent,

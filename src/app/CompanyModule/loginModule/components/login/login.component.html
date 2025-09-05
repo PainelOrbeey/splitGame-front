@@ -1,0 +1,78 @@
+<div class="login-wrapper">
+  <!-- BACKGROUND -->
+  <div class="background"></div>
+
+  <div class="login-container">
+    <!-- ESQUERDA -->
+    <div class="left-side">
+      <div class="welcome-text">
+        <h1>Olá,</h1>
+        <h2>Seja bem-vindo!</h2>
+      </div>
+
+      <img src="/icon_colored.png" alt="Foguete" class="rocket" />
+
+      <div class="create-account">
+        <p>
+          Não tem uma conta?
+          <a routerLink="/register">Criar uma conta</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- DIREITA -->
+    <div class="right-side">
+      <h2 class="title">Identifique-se para acessar sua conta.</h2>
+
+      <div class="form-group">
+        <label>Usuário ou e-mail <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="email" placeholder="Digite seu usuário ou e-mail" />
+        <p class="error" *ngIf="errors.email">{{ errors.email }}</p>
+      </div>
+
+      <div class="form-group">
+        <label>Senha <span class="required">*</span></label>
+        <div class="password-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" placeholder="Digite sua senha" />
+          <button type="button" class="toggle-btn" (click)="showPassword = !showPassword">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <p class="error" *ngIf="errors.password">{{ errors.password }}</p>
+      </div>
+
+      <div class="forgot">
+        <a routerLink="/forgot-password">Esqueceu sua senha?</a>
+      </div>
+
+      <button class="login-btn" (click)="handleLogin()">Entrar</button>
+
+      <div class="mobile-create">
+        <p>
+          Não tem uma conta?
+          <a routerLink="/register">Criar uma conta</a>
+        </p>
+      </div>
+
+      <p class="terms">
+        Ao prosseguir, você concorda com a
+        <a routerLink="/privacy-policy">Política de Privacidade</a> e
+        <a routerLink="/terms-of-use">Termos de uso</a>.
+      </p>
+
+      <!-- Dialog -->
+      <div class="dialog-backdrop" *ngIf="showDialog">
+        <div class="dialog">
+          <h2>Aprovação pendente</h2>
+          <p>
+            Sua conta está pendente de aprovação. Por favor, aguarde até que seu
+            cadastro seja aprovado.
+          </p>
+          <button (click)="showDialog = false">Entendi</button>
+        </div>
+      </div>
+
+      <p class="error" *ngIf="loginError">{{ loginError }}</p>
+    </div>
+  </div>
+</div>
