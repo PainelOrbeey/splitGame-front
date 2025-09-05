@@ -1,0 +1,235 @@
+<div class="container-wrapper">
+  <div class="header">
+    <h2>Links de Pagamento ({{ filteredLinks.length }}) registros</h2>
+    <app-user-menu [username]="'Admin White Label'" [email]="'admin@whitelabel.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </div>
+  <div class="header-actions">
+    <!-- <button class="btn-secondary" (click)="openCustomizeModal(selectedLink!)">
+      <i class="pi pi-palette"></i>
+      Customizar Checkout
+    </button> -->
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="pi pi-plus"></i>
+      Criar Link
+    </button>
+  </div>
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>Status</label>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+          <option value="pausado">Pausado</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Buscar</label>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()" placeholder="Nome ou descrição...">
+      </div>
+
+      <div class="filter-group">
+        <label>Preço Mínimo</label>
+        <input type="number" [(ngModel)]="filters.priceRange.min" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="filter-group">
+        <label>Preço Máximo</label>
+        <input type="number" [(ngModel)]="filters.priceRange.max" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Status</th>
+          <th>Valor</th>
+          <th>Analytics</th>
+          <th>Criado em</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let link of paginatedLinks">
+          <td>
+            <div class="link-name">
+              <strong>{{ link.name }}</strong>
+              <small>{{ link.url }}</small>
+            </div>
+          </td>
+          <td>{{ link.description || '-' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + link.status">
+              {{ link.status }}
+            </span>
+          </td>
+          <td class="price">{{ formatCurrency(link.price) }}</td>
+          <td>
+            <div class="analytics-mini">
+              <span>{{ link.analytics?.views || 0 }} views</span>
+              <span>{{ link.analytics?.conversions || 0 }} vendas</span>
+            </div>
+          </td>
+          <td>{{ formatDate(link.createdAt) }}</td>
+          <td>
+            <div class="actions">
+              <button class="btn-icon" (click)="openDetailsModal(link)" title="Detalhes">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button class="btn-icon" (click)="copyLink(link)" title="Copiar Link">
+                <i class="pi pi-copy"></i>
+              </button>
+              <button class="btn-icon" (click)="toggleStatus(link)" title="Alterar Status">
+                <i class="pi pi-power-off"></i>
+              </button>
+              <button class="btn-icon danger" (click)="deleteLink(link)" title="Excluir">
+                <i class="pi pi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <p>Carregando links de pagamento...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredLinks.length === 0">
+    <i class="pi pi-link"></i>
+    <h3>Nenhum link encontrado</h3>
+    <p>Crie seu primeiro link de pagamento para começar a vender.</p>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="pi pi-plus"></i>
+      Criar Primeiro Link
+    </button>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && filteredLinks.length > 0">
+    <button class="btn-pagination" (click)="previousPage()" [disabled]="currentPage === 1">
+      Anterior
+    </button>
+
+    <div class="page-numbers">
+      <button *ngFor="let page of [].constructor(totalPages); let i = index" class="btn-page"
+        [ngClass]="{ active: currentPage === i + 1 }" (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+    </div>
+
+    <button class="btn-pagination" (click)="nextPage()" [disabled]="currentPage === totalPages">
+      Próximo
+    </button>
+  </div>
+</div>
+
+<!-- Create Link Modal -->
+<app-custom-dialog [(visible)]="showCreateModal" title="Criar Link de Pagamento" width="600px" [actions]="[
+    { label: 'Cancelar', type: 'text', id: 'cancel' },
+    { label: creating ? 'Criando...' : 'Criar Link', type: 'primary', id: 'create' }
+  ]" (action)="$event === 'create' ? createPaymentLink() : null">
+  <form class="create-form">
+    <div class="form-group">
+      <label for="name">Nome do Produto *</label>
+      <input id="name" type="text" [(ngModel)]="newLink.name" name="name" placeholder="Ex: Curso de Angular" required>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Descrição</label>
+      <textarea id="description" [(ngModel)]="newLink.description" name="description"
+        placeholder="Descrição do produto ou serviço..." rows="3"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="price">Preço *</label>
+      <input id="price" type="number" [(ngModel)]="newLink.price" name="price" placeholder="0,00" min="0" step="0.01"
+        required>
+    </div>
+  </form>
+</app-custom-dialog>
+
+<!-- Details Modal -->
+<app-custom-dialog [(visible)]="showDetailsModal" title="Detalhes do Link" width="800px" [actions]="[
+    { label: 'Fechar', type: 'text', id: 'close' }
+  ]">
+  <div class="details-content" *ngIf="selectedLink">
+    <div class="details-grid">
+      <div class="detail-card">
+        <h4>Informações Básicas</h4>
+        <div class="detail-row">
+          <span class="label">Nome:</span>
+          <span class="value">{{ selectedLink.name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Descrição:</span>
+          <span class="value">{{ selectedLink.description || '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Preço:</span>
+          <span class="value">{{ formatCurrency(selectedLink.price) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="status-badge" [ngClass]="'status-' + selectedLink.status">
+            {{ selectedLink.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h4>Analytics</h4>
+        <div class="analytics-grid">
+          <div class="metric">
+            <span class="metric-value">{{ selectedLink.analytics?.views || 0 }}</span>
+            <span class="metric-label">Visualizações</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ selectedLink.analytics?.clicks || 0 }}</span>
+            <span class="metric-label">Cliques</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ selectedLink.analytics?.conversions || 0 }}</span>
+            <span class="metric-label">Conversões</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ formatCurrency(selectedLink.analytics?.revenue || 0) }}</span>
+            <span class="metric-label">Receita</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="link-actions">
+      <button class="btn-secondary" (click)="copyLink(selectedLink)">
+        <i class="pi pi-copy"></i>
+        Copiar Link
+      </button>
+      <!-- <button class="btn-secondary" (click)="generateNewLink(selectedLink)">
+        <i class="pi pi-refresh"></i>
+        Gerar Novo Link
+      </button> -->
+      <!-- <button class="btn-secondary" (click)="openCustomizeModal(selectedLink)">
+        <i class="pi pi-palette"></i>
+        Customizar
+      </button> -->
+      <button class="btn-danger" (click)="deleteLink(selectedLink)">
+        <i class="pi pi-trash"></i>
+        Excluir Link
+      </button>
+    </div>
+  </div>
+</app-custom-dialog>

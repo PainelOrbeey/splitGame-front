@@ -26,8 +26,10 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: $w-open;
   display: flex;
   flex-direction: column;
-  background: var(--card-bg);
-  color: black;
+  background: var(
+    --sidebar-gradient,
+    linear-gradient(180deg, var(--blue-500) 0%, var(--blue-900) 100%)
+  );  color: black;
   transition: width $transition, left $transition;
   z-index: 100;
   overflow-x: hidden;
@@ -44,7 +46,7 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .logo {
-    height: 50px;
+    height: 30px;
     transition: opacity 0.2s, width $transition;
     width: 119px;
     opacity: 1;
@@ -124,29 +126,43 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0.75rem;
     color: #fff;
     text-decoration: none;
-    transition: background $transition, color $transition, gap $transition,
-      padding $transition;
+    transition: background $transition;
 
     .label {
       white-space: nowrap;
-      opacity: 1;
-      transition: opacity 0.2s;
-      color: black;
+      color: var(--text-main);
     }
 
     i {
       font-size: 1.2rem;
-      transition: color $transition;
-      color: black;
+      color: var(--text-main)
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: var(--blue-500);
+      color: white !important;
+    .label {
+      white-space: nowrap;
+
+      color: white !important;
+    }
+    i {
+      font-size: 1.2rem;
+      color: white;
+    }
     }
 
     &.active {
-      background: #0000001d;
-      color: var(--gray-900);
+      background: var(--blue-500);
+      color: white !important;
+       .label {
+      white-space: nowrap;
+      color: white !important;
+    }
+    i {
+      font-size: 1.2rem;
+      color: white;
+    }
     }
   }
 }
@@ -253,6 +269,7 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0.5rem;
   border-radius: 50%;
   transition: background-color 0.2s;
+  color: var(--text-main);
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -272,7 +289,7 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 0.75rem;
-  color: black;
+  color: var(--text-main);
   cursor: pointer;
   transition: background 0.3s;
 
@@ -291,7 +308,6 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   a {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
-
     i {
       font-size: 1rem;
     }
@@ -311,5 +327,20 @@ $transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   nav::-webkit-scrollbar,
   footer::-webkit-scrollbar {
     display: none;
+  }
+}
+.light-only {
+  display: block;
+}
+.dark-only {
+  display: none;
+}
+
+:host-context(.dark) {
+  .light-only {
+    display: none;
+  }
+  .dark-only {
+    display: block;
   }
 }

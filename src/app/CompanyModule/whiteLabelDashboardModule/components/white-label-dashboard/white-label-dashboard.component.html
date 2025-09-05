@@ -10,7 +10,7 @@
       <div class="wallet-content">
         <div class="balance-info">
           <div class="balance-value">{{ partnerBalance.balance }}</div>
-          <div class="balance-label">Receita Total de Parceiros</div>
+          <div class="balance-label">Pedidos Pagos</div>
           <div class="balance-change" [class]="partnerBalance.changeType">
             {{ partnerBalance.change }} {{ partnerBalance.period }}
           </div>
@@ -26,8 +26,8 @@
 
     <div class="card-overview">
       <div class="overview-header">
-        <h3>Distribuição por Segmento</h3>
-        <p>Parceiros ativos por categoria de negócio</p>
+        <h3>Indice</h3>
+        <p>PIX, cartão de crédito e chargebacks.</p>
       </div>
 
       <div class="overview-content">
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <div class="charts-section">
+  <!-- <div class="charts-section">
     <div class="chart-card funnel-card">
       <div class="chart-header">
         <h3>Funil de Parceiros</h3>
@@ -138,11 +138,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <div class="table-section">
     <div class="table-header">
-      <h3>Parceiros Recentes</h3>
+      <h3>Ultimas transações</h3>
       <div class="table-actions">
         <button class="filter-btn">
           <i class="pi pi-filter"></i>
@@ -156,12 +156,11 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>NOME DO PARCEIRO</th>
-            <th>MARCA</th>
-            <th>DATA DE ADESÃO</th>
+            <th>NOME</th>
+            <th>PRODUTO</th>
+            <th>DATA</th>
             <th>STATUS</th>
             <th>RECEITA</th>
-            <th>CUSTOMIZAÇÕES</th>
           </tr>
         </thead>
         <tbody>
@@ -178,9 +177,9 @@
               </span>
             </td>
             <td class="revenue-cell">{{ partner.revenue }}</td>
-            <td>
+            <!-- <td>
               <span class="customizations-count">{{ partner.customizations }}</span>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>

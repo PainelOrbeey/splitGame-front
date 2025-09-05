@@ -18,6 +18,12 @@ import { IntegrationsComponent } from './CompanyModule/integrationsModule/compon
 import { ReceivablesComponent } from './CompanyModule/receivablesModule/components/receivables/receivables.component';
 import { MyCompanyComponent } from './CompanyModule/companyModule/components/my-company/my-company.component';
 import { LoginComponent } from './CompanyModule/loginModule/components/login/login.component';
+import { ReceiverBankComponent } from './CompanyModule/receiverBankModule/components/receiver-bank/receiver-bank.component';
+import { AvailableBalanceComponent } from './CompanyModule/availableBalanceModule/components/available-balance/available-balance.component';
+import { CashoutComponent } from './CompanyModule/cashoutModule/components/cashout/cashout.component';
+import { TransfersComponent } from './CompanyModule/transfersModule/components/transfers/transfers.component';
+import { WebhooksComponent } from './CompanyModule/webhooksModule/components/webhooks/webhooks.component';
+import { PaymentLinksComponent } from './CompanyModule/paymentLinksModule/components/payment-links/payment-links.component';
 
 
 export const routes: Routes = [
@@ -49,10 +55,20 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: WhiteLabelDashboardComponent },
       { path: 'transactions', component: WhiteLabelTransactionsComponent },
-      { path: 'clients', component: WhiteLabelClientsComponent },
-      { path: 'referrals', component: MyReferralsComponent },
+      // { path: 'clients', component: WhiteLabelClientsComponent },
+      // { path: 'referrals', component: MyReferralsComponent },
       { path: 'receivables', component: ReceivablesComponent },
-      { path: 'my-company', component: MyCompanyComponent }
+      { path: 'my-company', component: MyCompanyComponent },
+      { path: 'bank', component: ReceiverBankComponent },
+      { path: 'saque-balance', component: AvailableBalanceComponent },
+      { path: 'cashout', component: CashoutComponent },
+      {
+        path: 'transfers',
+        component: TransfersComponent
+      },
+      { path: 'webhooks', component: WebhooksComponent },
+      { path: 'payment-links', component: PaymentLinksComponent }
+
     ]
   },
   { path: '**', redirectTo: 'home/dashboard' }

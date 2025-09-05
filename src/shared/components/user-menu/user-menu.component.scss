@@ -113,3 +113,71 @@ $radius: 1rem;
 :host-context(.collapsed) .profile-trigger .info {
   display: none;
 }
+/* ===== Toggle Switch (input[type=checkbox]) ===== */
+.switch {
+  --switch-width: 44px;
+  --switch-height: 24px;
+  --switch-padding: 2px;
+  --switch-off: #d1d5db;   /* cinza claro */
+  --switch-on: #22c55e;    /* verde (similar ao PrimeNG) */
+  --thumb-size: 20px;      /* = height - 2*padding */
+  --focus-ring: 0 0 0 3px rgba(34, 197, 94, 0.35);
+
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* trilho */
+.switch-track {
+  position: relative;
+  display: inline-block;
+  width: var(--switch-width);
+  height: var(--switch-height);
+  background: var(--switch-off);
+  border-radius: var(--switch-height);
+  transition: background 150ms ease-in-out, box-shadow 150ms ease-in-out;
+  box-sizing: border-box;
+}
+
+/* “bolinha” */
+.switch-thumb {
+  position: absolute;
+  top: var(--switch-padding);
+  left: var(--switch-padding);
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transition: transform 150ms ease-in-out;
+  will-change: transform;
+}
+
+/* ligado */
+.switch-input:checked + .switch-track {
+  background: var(--switch-on);
+}
+
+.switch-input:checked + .switch-track .switch-thumb {
+  transform: translateX(calc(var(--switch-width) - var(--thumb-size) - 2*var(--switch-padding)));
+}
+
+/* foco acessível */
+.switch-input:focus-visible + .switch-track {
+  box-shadow: var(--focus-ring);
+}
+
+/* disabled (se precisar) */
+.switch-input:disabled + .switch-track {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

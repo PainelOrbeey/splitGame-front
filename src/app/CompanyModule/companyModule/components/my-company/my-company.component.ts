@@ -14,7 +14,7 @@ import { UserMenuComponent } from "../../../../../shared/components/user-menu/us
   templateUrl: "./my-company.component.html",
   styleUrls: ["./my-company.component.scss"],
       standalone: true,
-        imports: [CommonModule, DialogModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
+        imports: [CommonModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
 
 })
 export class MyCompanyComponent implements OnInit {

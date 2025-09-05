@@ -39,16 +39,16 @@
       </button>
       <button class="tab" [class.active]="activeTab === 'team'" (click)="setActiveTab('team')">
         <i class="pi pi-users"></i>
-        Equipe
+        Usuários
       </button>
       <button class="tab" [class.active]="activeTab === 'documents'" (click)="setActiveTab('documents')">
         <i class="pi pi-file"></i>
         Documentos
       </button>
-      <button class="tab" [class.active]="activeTab === 'billing'" (click)="setActiveTab('billing')">
+      <!-- <button class="tab" [class.active]="activeTab === 'billing'" (click)="setActiveTab('billing')">
         <i class="pi pi-credit-card"></i>
         Faturamento
-      </button>
+      </button> -->
     </div>
   </div>
 
@@ -331,7 +331,7 @@
 
   <div class="tab-content" *ngIf="activeTab === 'team'">
     <div class="content-header">
-      <h3>Equipe</h3>
+      <h3>Acessos</h3>
       <button class="btn-primary" (click)="addUserVisible = true">
         <i class="pi pi-plus"></i>
         Adicionar Usuário
@@ -408,14 +408,14 @@
     </div>
 
     <div class="billing-overview">
-      <div class="billing-card">
+      <!-- <div class="billing-card">
         <h4>Plano Atual</h4>
         <div class="plan-info">
           <span class="plan-name">{{ getPlanLabel(company?.plan || '') }}</span>
           <span class="plan-price">R$ 299,90/mês</span>
         </div>
         <button class="btn-primary">Alterar Plano</button>
-      </div>
+      </div> -->
 
       <div class="billing-card">
         <h4>Próxima Cobrança</h4>

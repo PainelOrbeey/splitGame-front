@@ -1,0 +1,245 @@
+<div class="container-wrapper">
+  <header class="header">
+    <h2>Saldo Disponível</h2>
+    <app-user-menu [username]="'Sistema White Label'" [email]="'whitelabel@sistema.com'"
+      [saldo]="balance.availableBalance" [saldoProtesto]="balance.protestBalance">
+    </app-user-menu>
+  </header>
+
+  <!-- Filter Tabs -->
+
+
+
+  <!-- Summary Metrics -->
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Transações" [value]="metrics.totalTransactions.toString()"
+      icon="pi pi-list">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total de Entradas" [value]="fmt(metrics.totalEntries)"
+      icon="pi pi-arrow-down">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total de Saídas" [value]="fmt(metrics.totalExits)" icon="pi pi-arrow-up">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Saldo Líquido" [value]="fmt(metrics.netBalance)" icon="pi pi-wallet">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Movimentação Mensal" [value]="metrics.monthlyMovement.toString()"
+      icon="pi pi-calendar">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Transações Pendentes" [value]="metrics.pendingTransactions.toString()"
+      icon="pi pi-clock">
+    </app-summary-card>
+  </div>
+  <!-- Balance Overview Cards -->
+  <div class="balance-overview">
+    <div class="balance-card main-balance">
+      <div class="balance-header">
+        <h3>Saldo Disponível</h3>
+        <button class="refresh-btn" (click)="refreshBalance()" [disabled]="refreshing">
+          <i class="pi pi-refresh" [class.spinning]="refreshing"></i>
+        </button>
+      </div>
+      <div class="balance-value main">{{ fmt(balance.availableBalance) }}</div>
+      <div class="balance-info">
+        <small>Última atualização: {{ balance.lastUpdate | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Saldo Em Protesto</h4>
+      <div class="balance-value protest">{{ fmt(balance.protestBalance) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Reserva Financeira</h4>
+      <div class="balance-value reserve">{{ fmt(balance.financialReserve) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>A Receber</h4>
+      <div class="balance-value receive">{{ fmt(balance.toReceive) }}</div>
+    </div>
+  </div>
+
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos', value: '' },
+        { label: 'Pendentes', value: 'pending' },
+        { label: 'Processando', value: 'processing' },
+        { label: 'Concluídas', value: 'completed' },
+        { label: 'Falharam', value: 'failed' },
+        { label: 'Canceladas', value: 'cancelled' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar transação, referência ou origem…"
+    (export)="exportCSV()" (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <!-- Transactions Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Histórico de Transações ({{ filteredTransactions.length }})</h3>
+      <div class="table-actions">
+        <div class="total-summary">
+          <span>Total Filtrado: </span>
+          <strong [class]="getTransactionTotal() >= 0 ? 'positive' : 'negative'">
+            {{ fmt(getTransactionTotal()) }}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Referência</th>
+            <th>Categoria</th>
+            <th>Status da Transação</th>
+            <th>Valores de Entrada</th>
+            <th>Valores de Saída</th>
+            <th>Total</th>
+            <th>Origem/Destino</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of paginatedTransactions" [class]="getTypeClass(transaction.type)">
+            <td>{{ transaction.date | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <div class="transaction-description">
+                <i class="pi" [ngClass]="getCategoryIcon(transaction.category)"></i>
+                {{ transaction.description }}
+              </div>
+            </td>
+            <td>
+              <span class="reference-code">{{ transaction.reference }}</span>
+            </td>
+            <td>
+              <span class="category-badge" [ngClass]="'category-' + transaction.category">
+                {{ transaction.category | titlecase }}
+              </span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(transaction.status)">
+                {{ transaction.status | titlecase }}
+              </span>
+            </td>
+            <td class="value-cell entry">
+              <span *ngIf="transaction.entryValue > 0" class="entry-value">
+                {{ fmt(transaction.entryValue) }}
+              </span>
+              <span *ngIf="transaction.entryValue === 0" class="no-value">-</span>
+            </td>
+            <td class="value-cell exit">
+              <span *ngIf="transaction.exitValue > 0" class="exit-value">
+                {{ fmt(transaction.exitValue) }}
+              </span>
+              <span *ngIf="transaction.exitValue === 0" class="no-value">-</span>
+            </td>
+            <td class="value-cell total">
+              <span [class]="transaction.total >= 0 ? 'positive-total' : 'negative-total'">
+                {{ fmt(transaction.total) }}
+              </span>
+            </td>
+            <td>
+              <span *ngIf="transaction.source" class="source-destination">{{ transaction.source }}</span>
+              <span *ngIf="transaction.destination" class="source-destination">{{ transaction.destination }}</span>
+              <span *ngIf="!transaction.source && !transaction.destination" class="no-value">-</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+  <orb-pagination [currentPage]="currentPage" [totalPages]="filteredTransactions.length"
+    (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Saldo</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Busca Geral</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()"
+          placeholder="Descrição, referência, origem...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="processing">Processando</option>
+          <option value="completed">Concluída</option>
+          <option value="failed">Falhou</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Tipo de Transação</span>
+        <select [(ngModel)]="filters.type" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="entrada">Entrada</option>
+          <option value="saida">Saída</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Categoria</span>
+        <select [(ngModel)]="filters.category" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="transfer">Transferência</option>
+          <option value="payment">Pagamento</option>
+          <option value="fee">Taxa</option>
+          <option value="refund">Estorno</option>
+          <option value="commission">Comissão</option>
+          <option value="withdrawal">Saque</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+</div>

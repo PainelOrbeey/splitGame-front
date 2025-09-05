@@ -4,7 +4,6 @@ import {
 import { CommonModule }      from '@angular/common';
 import { DialogModule, Dialog } from 'primeng/dialog';
 import { ButtonModule }      from 'primeng/button';
-import { InputSwitchModule } from 'primeng/inputswitch';
 import { FormsModule }       from '@angular/forms';
 import { Router } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
@@ -13,7 +12,8 @@ import { AvatarModule } from 'primeng/avatar';
   selector   : 'app-user-menu',
   standalone : true,
   imports    : [
-    CommonModule, DialogModule, ButtonModule, InputSwitchModule, FormsModule,AvatarModule,
+    CommonModule, DialogModule, ButtonModule,
+    FormsModule, AvatarModule
   ],
   templateUrl: './user-menu.component.html',
   styleUrls  : ['./user-menu.component.scss']
@@ -35,7 +35,16 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
 
   constructor(private ngZone: NgZone, private router: Router) {}
 
-  ngAfterViewInit() {}
+  ngAfterViewInit() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      this.darkMode = true;
+      document.documentElement.classList.add('dark');
+    } else {
+      this.darkMode = false;
+      document.documentElement.classList.remove('dark');
+    }
+  }
 
   ngOnDestroy() {
     this.removeClickListener();
@@ -66,13 +75,6 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
     document.removeEventListener('mousedown', this.handleClickOutside, true);
   }
 
-  goToCompany() {
-    this.router.navigate(['/company/dashboard']);
-  }
-  goToAdmin() {
-    this.router.navigate(['/admin/dashboard']);
-  }
-
   handleClickOutside = (event: MouseEvent) => {
     const trigger = this.triggerRef?.nativeElement;
     const dialog = this.menuDlg?.container as HTMLElement;
@@ -91,7 +93,13 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
   };
 
   toggleTheme() {
-    document.documentElement.classList.toggle('dark', this.darkMode);
+    if (this.darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   }
 
   toggleMenu() {
@@ -103,8 +111,16 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  goToCompany() {
+    this.router.navigate(['/company/dashboard']);
+  }
+  goToAdmin() {
+    this.router.navigate(['/admin/dashboard']);
+  }
+
   logout() {
     this.router.navigate(['/login']);
     this.menuVisible = false;
   }
 }
+

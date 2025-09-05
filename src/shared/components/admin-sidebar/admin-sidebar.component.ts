@@ -81,42 +81,55 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
     },
   ]
 
-  private userMenu: NavItem[] = [
-    {
-      label: "Dashboard",
-      icon: "pi pi-chart-bar",
-      route: "/company/dashboard",
-    },
-    {
-      label: "Minhas Transações",
-      icon: "pi pi-credit-card",
-      route: "/company/transactions",
-    },
-    {
-      label: "Meus Clientes",
-      icon: "pi pi-users",
-      route: "/company/clients",
-    },
-    {
-      label: "Meus Referidos",
-      icon: "pi pi-users",
-      route: "/company/referrals",
-    },
-    {
-      label: "Meus Recebíveis",
-      icon: "pi pi-money-bill",
-      route: "/company/receivables",
-    },
+private userMenu: NavItem[] = [
+  {
+    label: "Dashboard",
+    icon: "pi pi-chart-bar",
+    route: "/company/dashboard",
+  },
+  {
+    label: "Minhas Transações",
+    icon: "pi pi-credit-card",
+    route: "/company/transactions",
+  },
 
+      {
+        label: "Bancos",
+        icon: "pi pi-dollar",
+        route: "/company/bank",
+      },
+      {
+        label: "Saldo Disponível",
+        icon: "pi pi-wallet",
+        route: "/company/saque-balance",
+      },
+      {
+        label: "Transferências",
+        icon: "pi pi-file-export",
+        route: "/company/transfers",
+      },
+      {
+        label: "Cashout",
+        icon: "pi pi-arrow-right-arrow-left",
+        route: "/company/cashout",
+      },
+      { label: "Webhooks",
+        icon: "pi pi-bell",
+        route: "/company/webhooks",
+  },
+      { label: "Links de Pagamento",
+        icon: "pi pi-link",
+        route: "/company/payment-links",
+  },
+];
 
-  ]
 
   private adminFooter: NavItem[] = [
     { label: "Configurações", icon: "pi pi-cog", route: "/admin/settings" },
   ]
 
   private userFooter: NavItem[] = [
-    { label: "Minha Empresa", icon: "pi pi-building", route: "/company/my-company" },
+    { label: "Configurações", icon: "pi pi-building", route: "/company/my-company" },
   ]
 
   constructor(private router: Router) {}

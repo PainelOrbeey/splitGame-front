@@ -1,0 +1,319 @@
+<div class="container-wrapper">
+  <header class="header">
+    <h2>Transferências ({{ filteredTransfers.length }}) registro{{ filteredTransfers.length !== 1 ? 's' : '' }}</h2>
+    <app-user-menu [username]="'Sistema White Label'" [email]="'whitelabel@sistema.com'" [saldo]="25000"
+      [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="subtitle">
+    <p>Aqui você pode visualizar todas as transferências realizadas.</p>
+  </div>
+
+  <!-- Filter Tabs -->
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos', value: '' },
+      { label: 'Pendentes', value: 'PENDENTE' },
+      { label: 'Aprovados', value: 'APROVADO' },
+      { label: 'Rejeitados', value: 'REJEITADO' },
+      { label: 'Em Processo', value: 'EM_PROCESSO' },
+      { label: 'Reembolsados', value: 'REEMBOLSADO' },
+      { label: 'Erro', value: 'ERRO' }
+    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()"
+    searchPlaceholder="Buscar transferência, destino ou cliente…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Transferências" [value]="metrics.totalTransfers.toString()"
+      icon="pi pi-arrow-right-arrow-left">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Pendentes" [value]="metrics.pendingTransfers.toString()"
+      icon="pi pi-clock">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Aprovadas" [value]="metrics.approvedTransfers.toString()"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total Transferido" [value]="fmt(metrics.totalAmount)"
+      icon="pi pi-wallet">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total em Taxas" [value]="fmt(metrics.totalFees)" icon="pi pi-percentage">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Rejeitadas" [value]="metrics.rejectedTransfers.toString()"
+      icon="pi pi-times-circle">
+    </app-summary-card>
+  </div>
+
+  <!-- Action Button -->
+  <div class="action-buttons-row">
+    <button class="btn-primary" (click)="openRequestTransferDialog()">
+      <i class="pi pi-plus"></i>
+      Solicitar Transferência
+    </button>
+  </div>
+
+  <!-- Transfers Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Transferências</h3>
+    </div>
+
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Valor Transferido</th>
+            <th>Status</th>
+            <th>Destino</th>
+            <th>É Subconta?</th>
+            <th>Criado Em</th>
+            <th>Taxa</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transfer of paginatedTransfers">
+            <td>
+              <div class="transfer-id">
+                <span class="id-short">{{ transfer.id.substring(0, 8) }}...</span>
+                <small>{{ transfer.client }}</small>
+              </div>
+            </td>
+            <td>{{ fmt(transfer.transferredAmount) }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(transfer.status)">
+                {{ transfer.status.replace('_', ' ') }}
+              </span>
+            </td>
+            <td>
+              <div class="destination-info">
+                <strong>{{ transfer.destination }}</strong>
+                <small>{{ transfer.document }}</small>
+              </div>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="transfer.isSubaccount ? 'tag-success' : 'tag-secondary'">
+                {{ transfer.isSubaccount ? 'Sim' : 'Não' }}
+              </span>
+            </td>
+            <td>{{ transfer.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ fmt(transfer.fee) }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn view-btn" (click)="openTransferDetails(transfer)">
+                  <i class="pi pi-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Transferências</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Busca Geral</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()" placeholder="ID, destino, cliente...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="PENDENTE">Pendente</option>
+          <option value="APROVADO">Aprovado</option>
+          <option value="REJEITADO">Rejeitado</option>
+          <option value="EM_PROCESSO">Em Processo</option>
+          <option value="REEMBOLSADO">Reembolsado</option>
+          <option value="ERRO">Erro</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Destino</span>
+        <input type="text" [(ngModel)]="filters.destination" (input)="applyFilters()"
+          placeholder="Destino da transferência">
+      </div>
+
+      <div class="field">
+        <span class="caption">Documento</span>
+        <input type="text" [(ngModel)]="filters.document" (input)="applyFilters()" placeholder="CPF/CNPJ">
+      </div>
+
+      <div class="field">
+        <span class="caption">É Subconta?</span>
+        <select [(ngModel)]="filters.isSubaccount" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="true">Sim</option>
+          <option value="false">Não</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+</div>
+
+<!-- Request Transfer Dialog -->
+<app-custom-dialog [(visible)]="requestTransferDialogVisible" title="Solicitar Transferência" [actions]="[
+    {id:'submit', label:'Solicitar', type:'primary'},
+    {id:'cancel', label:'Cancelar', type:'text'}
+  ]" (action)="$event === 'submit' ? submitTransferRequest() : requestTransferDialogVisible = false" width="500px">
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Destino</label>
+      <input type="text" [(ngModel)]="newTransferRequest.destination" placeholder="Digite o destino">
+    </div>
+
+    <div class="field">
+      <label>Documento</label>
+      <input type="text" [(ngModel)]="newTransferRequest.document" placeholder="Digite o documento">
+    </div>
+
+    <div class="field">
+      <label>Chave PIX (opcional)</label>
+      <input type="text" [(ngModel)]="newTransferRequest.pixKey" placeholder="Chave PIX">
+    </div>
+
+    <div class="field">
+      <label>Valor</label>
+      <input type="number" [(ngModel)]="newTransferRequest.amount" placeholder="0,00" step="0.01">
+    </div>
+
+    <div class="field">
+      <label>Descrição (opcional)</label>
+      <textarea [(ngModel)]="newTransferRequest.description" placeholder="Descrição da transferência"></textarea>
+    </div>
+
+    <div class="transfer-info">
+      <div class="info-item">
+        <span>Taxa estimada:</span>
+        <strong>{{ fmt(calculateFee(newTransferRequest.amount || 0)) }}</strong>
+      </div>
+      <div class="info-item">
+        <span>Valor líquido:</span>
+        <strong>{{ fmt((newTransferRequest.amount || 0) - calculateFee(newTransferRequest.amount || 0)) }}</strong>
+      </div>
+    </div>
+  </div>
+</app-custom-dialog>
+
+<!-- Transfer Details Dialog -->
+<app-custom-dialog [(visible)]="transferDetailsDialogVisible" title="Visualizar Transferência" [actions]="[
+    {id:'close', label:'Voltar', type:'primary'}
+  ]" (action)="transferDetailsDialogVisible = false" width="600px">
+
+  <div class="transfer-details" *ngIf="selectedTransfer">
+    <div class="details-grid">
+      <div class="detail-section">
+        <h4>Informações Gerais</h4>
+        <div class="detail-row">
+          <span class="label">Cliente:</span>
+          <span class="value">{{ selectedTransfer.client }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Recebedor:</span>
+          <span class="value">{{ selectedTransfer.receiver }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Destino:</span>
+          <span class="value">{{ selectedTransfer.destination }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">PIX:</span>
+          <span class="value">{{ selectedTransfer.pixKey || '-' }}</span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Valores</h4>
+        <div class="detail-row">
+          <span class="label">Valor transferido:</span>
+          <span class="value amount">{{ fmt(selectedTransfer.transferredAmount) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span class="tag" [ngClass]="getStatusClass(selectedTransfer.status)">
+            {{ selectedTransfer.status.replace('_', ' ') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Seus dados de Transferências</h4>
+        <div class="detail-row">
+          <span class="label">Id da transferência:</span>
+          <span class="value">{{ selectedTransfer.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Taxa da transferência:</span>
+          <span class="value">{{ fmt(selectedTransfer.fee) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Criada em:</span>
+          <span class="value">{{ selectedTransfer.createdAt | date:'dd/MM/yyyy \'às\' HH:mm' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Última Atualização:</span>
+          <span class="value">{{ selectedTransfer.updatedAt | date:'dd/MM/yyyy \'às\' HH:mm' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">ID no banking:</span>
+          <span class="value">{{ selectedTransfer.bankingId || '-' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-custom-dialog>

@@ -1,0 +1,542 @@
+<div class="container-wrapper">
+  <header class="header">
+    <h2>Banco Recebedor</h2>
+    <app-user-menu [username]="'Sistema White Label'" [email]="'whitelabel@sistema.com'"
+      [saldo]="receiverBalance.availableBalance" [saldoProtesto]="receiverBalance.blockedBalance">
+    </app-user-menu>
+  </header>
+
+  <div class="summary-grid">
+    <app-summary-card class="width-max" title="Total de Contas" [value]="metrics.totalAccounts.toString()"
+      icon="pi pi-building">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Contas Ativas" [value]="metrics.activeAccounts.toString()"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Saldo Total" [value]="fmt(metrics.totalBalance)" icon="pi pi-wallet">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Transferências Mensais" [value]="metrics.monthlyTransfers.toString()"
+      icon="pi pi-arrow-right-arrow-left">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Antecipações Pendentes" [value]="metrics.pendingAnticipations.toString()"
+      icon="pi pi-clock">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Total Antecipado" [value]="fmt(metrics.totalAnticipated)"
+      icon="pi pi-chart-line">
+    </app-summary-card>
+  </div>
+  <app-filter-tabs [tabs]="[
+        { label: 'Todos', value: '' },
+        { label: 'Pendentes', value: 'pending' },
+        { label: 'Processando', value: 'processing' },
+        { label: 'Recebidos', value: 'completed' },
+        { label: 'Falharam', value: 'failed' },
+        { label: 'Cancelados', value: 'cancelled' }
+      ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()"
+    searchPlaceholder="Buscar conta, transferência ou antecipação…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+  <!-- Action Buttons -->
+  <div class="action-buttons-row">
+    <button class="btn-primary" (click)="openAddAccountDialog()">
+      <i class="pi pi-plus"></i>
+      Adicionar Conta
+    </button>
+    <button class="btn-secondary" (click)="openBalanceDialog()">
+      <i class="pi pi-wallet"></i>
+      Verificar Saldo
+    </button>
+    <button class="btn-secondary" (click)="openTransferDialog()">
+      <i class="pi pi-arrow-right-arrow-left"></i>
+      Nova Transferência
+    </button>
+    <button class="btn-secondary" (click)="openAnticipationDialog()">
+      <i class="pi pi-fast-forward"></i>
+      Solicitar Antecipação
+    </button>
+  </div>
+
+  <!-- Bank Accounts Cards -->
+  <div class="accounts-section">
+    <div class="section-header">
+      <h3>Contas Bancárias ({{ filteredBankAccounts.length }})</h3>
+    </div>
+
+    <div class="accounts-grid">
+      <div *ngFor="let account of filteredBankAccounts" class="account-card">
+        <div class="account-header">
+          <div class="bank-info">
+            <div class="bank-name">{{ account.bank }}</div>
+            <div class="bank-code">{{ account.bankCode }}</div>
+          </div>
+          <div class="account-actions">
+            <i class="pi" [ngClass]="account.isDefault ? 'pi-star-fill' : 'pi-star'"
+              (click)="setAccountAsDefault(account.id)"
+              [style.color]="account.isDefault ? 'var(--blue-500)' : 'var(--border-color)'">
+            </i>
+            <!-- <button class="action-btn" (click)="toggleAccountStatus(account.id)">
+              <i class="pi" [ngClass]="account.status === 'active' ? 'pi-pause' : 'pi-play'"></i>
+            </button> -->
+          </div>
+        </div>
+
+        <div class="account-details">
+          <div class="detail-row">
+            <span class="label">Agência:</span>
+            <span class="value">{{ account.agency }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Conta:</span>
+            <span class="value">{{ account.accountNumber }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Tipo:</span>
+            <span class="tag tag-info">
+              {{ account.accountType === 'checking' ? 'Corrente' : 'Poupança' }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Status:</span>
+            <span class="tag" [ngClass]="getStatusClass(account.status)">
+              {{ account.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="account-balance">
+          <div class="balance-label">Saldo Atual</div>
+          <div class="balance-value">{{ fmt(account.balance) }}</div>
+        </div>
+
+        <div class="account-footer" *ngIf="account.lastTransaction">
+          <small>Última transação: {{ account.lastTransaction | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Transfers Section -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Transferências Recentes ({{ transfers.length }})</h3>
+    </div>
+
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Referência</th>
+            <th>De</th>
+            <th>Para</th>
+            <th>Valor</th>
+            <th>Taxa</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Cliente</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transfer of paginatedTransfers">
+            <td>{{ transfer.reference }}</td>
+            <td>{{ transfer.fromAccount }}</td>
+            <td>{{ transfer.toAccount }}</td>
+            <td>{{ fmt(transfer.amount) }}</td>
+            <td>{{ fmt(transfer.fee) }}</td>
+            <td>
+              <span class="tag tag-info">{{ transfer.type | uppercase }}</span>
+            </td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(transfer.status)">
+                {{ transfer.status | titlecase }}
+              </span>
+            </td>
+            <td>
+              <span class="priority-badge" [ngClass]="getPriorityClass(transfer.priority || 'normal')">
+                {{ transfer.priority | titlecase }}
+              </span>
+            </td>
+            <td>{{ transfer.customer || '-' }}</td>
+            <td>{{ transfer.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <!-- Anticipations Section -->
+  <div class="table-card">
+    <div class="table-header">
+      <h3>Antecipações ({{ anticipations.length }})</h3>
+    </div>
+
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Referência</th>
+            <th>Valor Solicitado</th>
+            <th>Valor Aprovado</th>
+            <th>Taxa</th>
+            <th>Status</th>
+            <th>Prioridade</th>
+            <th>Cliente</th>
+            <th>Data Solicitação</th>
+            <th>Vencimento</th>
+            <th>Descrição</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let anticipation of paginatedAnticipations">
+            <td>{{ anticipation.reference }}</td>
+            <td>{{ fmt(anticipation.requestedAmount) }}</td>
+            <td>{{ fmt(anticipation.approvedAmount) }}</td>
+            <td>{{ anticipation.feePercentage }}%</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(anticipation.status)">
+                {{ anticipation.status | titlecase }}
+              </span>
+            </td>
+            <td>
+              <span class="priority-badge" [ngClass]="getPriorityClass(anticipation.priority || 'normal')">
+                {{ anticipation.priority | titlecase }}
+              </span>
+            </td>
+            <td>{{ anticipation.customer || '-' }}</td>
+            <td>{{ anticipation.requestDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ anticipation.dueDate | date:'dd/MM/yyyy' }}</td>
+            <td>{{ anticipation.description }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Banco Recebedor</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Busca Geral</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()"
+          placeholder="Conta, referência, cliente...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="processing">Processando</option>
+          <option value="completed">Recebido</option>
+          <option value="failed">Falhou</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Método de Pagamento</span>
+        <select [(ngModel)]="filters.paymentMethod" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pix">PIX</option>
+          <option value="ted">TED</option>
+          <option value="internal">Transferência Interna</option>
+          <option value="doc">DOC</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Adquirente</span>
+        <select [(ngModel)]="filters.acquirer" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="Stone">Stone</option>
+          <option value="Cielo">Cielo</option>
+          <option value="Rede">Rede</option>
+          <option value="PagSeguro">PagSeguro</option>
+          <option value="Mercado Pago">Mercado Pago</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Prioridade</span>
+        <select [(ngModel)]="filters.priority" (change)="applyFilters()">
+          <option value="">Todas</option>
+          <option value="low">Baixa</option>
+          <option value="normal">Normal</option>
+          <option value="high">Alta</option>
+          <option value="urgent">Urgente</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" placeholder="R$ 0,00">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" placeholder="R$ 999.999,99">
+      </div>
+
+      <div class="field">
+        <span class="caption">Cliente</span>
+        <input type="text" [(ngModel)]="filters.customer" (input)="applyFilters()" placeholder="Nome do cliente">
+      </div>
+
+      <div class="field">
+        <span class="caption">Referência</span>
+        <input type="text" [(ngModel)]="filters.reference" (input)="applyFilters()" placeholder="Código de referência">
+      </div>
+
+      <div class="field">
+        <span class="caption">Período</span>
+        <select [(ngModel)]="filters.period" (change)="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="today">Hoje</option>
+          <option value="week">Últimos 7 dias</option>
+          <option value="month">Este mês</option>
+          <option value="quarter">Este trimestre</option>
+          <option value="year">Este ano</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+</div>
+
+<!-- Add Account Dialog -->
+<app-custom-dialog [(visible)]="addAccountDialogVisible" title="Adicionar Nova Conta Bancária" [actions]="[
+    {id:'save', label:'Salvar', type:'primary'},
+    {id:'cancel', label:'Cancelar', type:'text'}
+  ]" (action)="$event === 'save' ? saveAccount() : addAccountDialogVisible = false" width="500px">
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Banco</label>
+      <input type="text" [(ngModel)]="newAccount.bank" placeholder="Nome do banco">
+    </div>
+
+    <div class="field">
+      <label>Código do Banco</label>
+      <input type="text" [(ngModel)]="newAccount.bankCode" placeholder="Ex: 001, 341, 237">
+    </div>
+
+    <div class="field">
+      <label>Agência</label>
+      <input type="text" [(ngModel)]="newAccount.agency" placeholder="Ex: 1234">
+    </div>
+
+    <div class="field">
+      <label>Número da Conta</label>
+      <input type="text" [(ngModel)]="newAccount.accountNumber" placeholder="Ex: 12345-6">
+    </div>
+
+    <div class="field">
+      <label>Tipo de Conta</label>
+      <select [(ngModel)]="newAccount.accountType">
+        <option value="checking">Conta Corrente</option>
+        <option value="savings">Conta Poupança</option>
+      </select>
+    </div>
+
+    <div class="field checkbox-field">
+      <label>
+        <input type="checkbox" [(ngModel)]="newAccount.isDefault">
+        Definir como conta padrão
+      </label>
+    </div>
+  </div>
+</app-custom-dialog>
+
+<!-- Balance Dialog -->
+<app-custom-dialog [(visible)]="balanceDialogVisible" title="Verificar Saldo das Contas" [actions]="[
+    {id:'refresh', label:'Atualizar', type:'primary'},
+    {id:'close', label:'Fechar', type:'text'}
+  ]" (action)="$event === 'refresh' ? refreshBalance() : balanceDialogVisible = false" width="600px">
+
+  <div class="balance-overview">
+    <div class="balance-card">
+      <h4>Saldo Total</h4>
+      <div class="balance-value total">{{ fmt(receiverBalance.totalBalance) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Saldo Disponível</h4>
+      <div class="balance-value available">{{ fmt(receiverBalance.availableBalance) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Saldo Bloqueado</h4>
+      <div class="balance-value blocked">{{ fmt(receiverBalance.blockedBalance) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Saldo Pendente</h4>
+      <div class="balance-value pending">{{ fmt(receiverBalance.pendingBalance) }}</div>
+    </div>
+  </div>
+
+  <div class="balance-details">
+    <h4>Detalhes por Conta</h4>
+    <div class="account-balances">
+      <div *ngFor="let account of bankAccounts" class="account-balance-item">
+        <div class="account-info">
+          <strong>{{ account.bank }}</strong>
+          <span>{{ account.agency }} - {{ account.accountNumber }}</span>
+        </div>
+        <div class="account-balance">{{ fmt(account.balance) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-update">
+    <small>Última atualização: {{ receiverBalance.lastUpdate | date:'dd/MM/yyyy HH:mm:ss' }}</small>
+  </div>
+</app-custom-dialog>
+
+<!-- Transfer Dialog -->
+<app-custom-dialog [(visible)]="transferDialogVisible" title="Nova Transferência" [actions]="[
+    {id:'save', label:'Transferir', type:'primary'},
+    {id:'cancel', label:'Cancelar', type:'text'}
+  ]" (action)="$event === 'save' ? saveTransfer() : transferDialogVisible = false" width="500px">
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Conta de Origem</label>
+      <select [(ngModel)]="newTransfer.fromAccount">
+        <option *ngFor="let account of bankAccounts" [value]="account.bank + ' - ' + account.accountNumber">
+          {{ account.bank }} - {{ account.accountNumber }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Conta de Destino</label>
+      <input type="text" [(ngModel)]="newTransfer.toAccount" placeholder="Banco e conta de destino">
+    </div>
+
+    <div class="field">
+      <label>Valor</label>
+      <input type="number" [(ngModel)]="newTransfer.amount" placeholder="0,00" step="0.01">
+    </div>
+
+    <div class="field">
+      <label>Tipo de Transferência</label>
+      <select [(ngModel)]="newTransfer.type">
+        <option value="internal">Transferência Interna</option>
+        <option value="pix">PIX</option>
+        <option value="ted">TED</option>
+        <option value="doc">DOC</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Prioridade</label>
+      <select [(ngModel)]="newTransfer.priority">
+        <option value="low">Baixa</option>
+        <option value="normal">Normal</option>
+        <option value="high">Alta</option>
+        <option value="urgent">Urgente</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Cliente</label>
+      <input type="text" [(ngModel)]="newTransfer.customer" placeholder="Nome do cliente">
+    </div>
+
+    <div class="field">
+      <label>Descrição</label>
+      <textarea [(ngModel)]="newTransfer.description" placeholder="Descrição da transferência"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Taxa (R$)</label>
+      <input type="number" [(ngModel)]="newTransfer.fee" placeholder="0,00" step="0.01">
+    </div>
+  </div>
+</app-custom-dialog>
+
+<!-- Anticipation Dialog -->
+<app-custom-dialog [(visible)]="anticipationDialogVisible" title="Solicitar Antecipação" [actions]="[
+    {id:'save', label:'Solicitar', type:'primary'},
+    {id:'cancel', label:'Cancelar', type:'text'}
+  ]" (action)="$event === 'save' ? saveAnticipation() : anticipationDialogVisible = false" width="500px">
+
+  <div class="form-grid">
+    <div class="field">
+      <label>Conta para Recebimento</label>
+      <select [(ngModel)]="newAnticipation.accountId">
+        <option *ngFor="let account of bankAccounts" [value]="account.id">
+          {{ account.bank }} - {{ account.accountNumber }}
+        </option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Valor Solicitado</label>
+      <input type="number" [(ngModel)]="newAnticipation.requestedAmount" placeholder="0,00" step="0.01">
+    </div>
+
+    <div class="field">
+      <label>Taxa (%)</label>
+      <input type="number" [(ngModel)]="newAnticipation.feePercentage" placeholder="10" step="0.1">
+    </div>
+
+    <div class="field">
+      <label>Prioridade</label>
+      <select [(ngModel)]="newAnticipation.priority">
+        <option value="low">Baixa</option>
+        <option value="normal">Normal</option>
+        <option value="high">Alta</option>
+        <option value="urgent">Urgente</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Cliente</label>
+      <input type="text" [(ngModel)]="newAnticipation.customer" placeholder="Nome do cliente">
+    </div>
+
+    <div class="field">
+      <label>Descrição</label>
+      <textarea [(ngModel)]="newAnticipation.description" placeholder="Motivo da antecipação"></textarea>
+    </div>
+
+    <div class="anticipation-info">
+      <div class="info-item">
+        <span>Valor líquido estimado:</span>
+        <strong>{{ fmt((newAnticipation.requestedAmount || 0) * (1 - (newAnticipation.feePercentage || 10) / 100))
+          }}</strong>
+      </div>
+      <div class="info-item">
+        <span>Taxa estimada:</span>
+        <strong>{{ fmt((newAnticipation.requestedAmount || 0) * (newAnticipation.feePercentage || 10) / 100) }}</strong>
+      </div>
+    </div>
+  </div>
+</app-custom-dialog>
