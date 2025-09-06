@@ -7,26 +7,17 @@
   </header>
 
   <div class="summary-grid">
-    <app-summary-card class="width-max" title="Total de Contas" [value]="metrics.totalAccounts.toString()"
-      icon="pi pi-building">
+
+    <app-summary-card class="width-max" title="Saldo Disponível" [value]="fmt(metrics.totalBalance)"
+      icon="pi pi-wallet">
     </app-summary-card>
 
-    <app-summary-card class="width-max" title="Contas Ativas" [value]="metrics.activeAccounts.toString()"
-      icon="pi pi-check-circle">
+
+    <app-summary-card class="width-max" title="Aguardando Antecipações"
+      [value]="metrics.pendingAnticipations.toString()" icon="pi pi-clock">
     </app-summary-card>
 
-    <app-summary-card class="width-max" title="Saldo Total" [value]="fmt(metrics.totalBalance)" icon="pi pi-wallet">
-    </app-summary-card>
-
-    <app-summary-card class="width-max" title="Transferências Mensais" [value]="metrics.monthlyTransfers.toString()"
-      icon="pi pi-arrow-right-arrow-left">
-    </app-summary-card>
-
-    <app-summary-card class="width-max" title="Antecipações Pendentes" [value]="metrics.pendingAnticipations.toString()"
-      icon="pi pi-clock">
-    </app-summary-card>
-
-    <app-summary-card class="width-max" title="Total Antecipado" [value]="fmt(metrics.totalAnticipated)"
+    <app-summary-card class="width-max" title="A Receber" [value]="fmt(metrics.totalAnticipated)"
       icon="pi pi-chart-line">
     </app-summary-card>
   </div>

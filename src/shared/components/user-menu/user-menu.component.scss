@@ -95,7 +95,21 @@ $radius: 1rem;
     height: 28px;
     font-size: 1rem;
   }
-
+.chip-exit{
+    background: color-mix(in srgb, #ef4444 12%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 35%, transparent);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .chip-exit:hover{
+    background: color-mix(in srgb, #ef4444 20%, transparent);
+    border: 1px solid color-mix(in srgb, #ef4444 50%, transparent);
+}
   :host ::ng-deep .user-menu {
     width: 210px !important;
     min-width: 0 !important;

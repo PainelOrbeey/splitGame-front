@@ -24,6 +24,10 @@ import { CashoutComponent } from './CompanyModule/cashoutModule/components/casho
 import { TransfersComponent } from './CompanyModule/transfersModule/components/transfers/transfers.component';
 import { WebhooksComponent } from './CompanyModule/webhooksModule/components/webhooks/webhooks.component';
 import { PaymentLinksComponent } from './CompanyModule/paymentLinksModule/components/payment-links/payment-links.component';
+import { ApiCredentialsComponent } from './CompanyModule/apiCredentialsModule/components/api-credentials/api-credentials.component';
+import { BillingPanelComponent } from './CompanyModule/billingPanelModule/components/billing-panel/billing-panel.component';
+import { AcquirersManagementComponent } from './adminModule/acquirersModule/components/acquirers-management/acquirers-management.component';
+import { BaasManagementComponent } from './adminModule/baasModule/components/baas-management/baas-management.component';
 
 
 export const routes: Routes = [
@@ -45,7 +49,9 @@ export const routes: Routes = [
       { path: 'profit-company', component: CompanyProfitComponent },
       { path: 'acquirer-revenue', component: AcquirerRevenueComponent },
             { path: 'integrations', component: IntegrationsComponent },
-
+      { path: 'acquirers', component: AcquirersManagementComponent },
+      { path: 'baas', component: BaasManagementComponent },
+      { path: 'api-credentials', component: ApiCredentialsComponent },
 
     ]
   },
@@ -67,7 +73,9 @@ export const routes: Routes = [
         component: TransfersComponent
       },
       { path: 'webhooks', component: WebhooksComponent },
-      { path: 'payment-links', component: PaymentLinksComponent }
+      { path: 'payment-links', component: PaymentLinksComponent },
+      { path: 'api-credentials', component: ApiCredentialsComponent },
+      { path: 'charge', component: BillingPanelComponent },
 
     ]
   },

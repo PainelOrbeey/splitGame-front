@@ -1,0 +1,635 @@
+/* Derivados apenas a partir das variáveis fornecidas */
+:host {
+  --bg-soft: color-mix(in srgb, var(--card-bg) 92%, var(--text-main));
+  --bg-softer: color-mix(in srgb, var(--card-bg) 96%, var(--text-main));
+  --text-muted: color-mix(in srgb, var(--text-main) 60%, var(--card-bg));
+  --shadow-color: color-mix(in srgb, var(--text-main) 10%, transparent);
+  --accent-soft: color-mix(in srgb, var(--blue-500) 15%, var(--card-bg));
+  --accent-softer: color-mix(in srgb, var(--blue-500) 8%, var(--card-bg));
+}
+
+/* Summary */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 0 2rem;
+}
+
+/* Current Invoice Section */
+.current-invoice-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 0 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.current-invoice-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: 0 2px 4px 0 var(--shadow-color);
+  border: 1px solid var(--border-color);
+
+  .invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h3 {
+      color: var(--text-main);
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .invoice-status {
+      text-align: right;
+
+      .status-badge {
+        display: block;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        background-color: var(--accent-softer);
+        color: var(--blue-500);
+
+        &.pending {
+          background-color: var(--accent-soft);
+          color: var(--blue-500);
+        }
+      }
+
+      .invoice-amount {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--blue-500);
+      }
+    }
+  }
+
+  .total-paid {
+    padding: 1rem;
+    background-color: var(--bg-soft);
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--text-main);
+  }
+
+  .payment-section {
+    h4 {
+      color: var(--text-main);
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .payment-steps {
+      display: flex;
+      gap: 2rem;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .step {
+        flex: 1;
+        display: flex;
+        gap: 1rem;
+
+        .step-number {
+          width: 2.5rem;
+          height: 2.5rem;
+          background-color: var(--blue-500);
+          color: var(--card-bg);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          flex-shrink: 0;
+        }
+
+        .step-content {
+          flex: 1;
+
+          h5 {
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+          }
+
+          p {
+            color: var(--text-muted);
+            margin: 0 0 1rem 0;
+            line-height: 1.5;
+          }
+
+          .pix-key {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background-color: var(--bg-soft);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+
+            span {
+              flex: 1;
+              font-family: monospace;
+              font-weight: 600;
+              color: var(--text-main);
+            }
+
+            .btn-copy {
+              background: none;
+              border: none;
+              color: var(--blue-500);
+              cursor: pointer;
+              padding: 0.25rem;
+              border-radius: 0.25rem;
+              transition: background-color 0.2s ease;
+
+              &:hover {
+                background-color: var(--accent-softer);
+              }
+            }
+          }
+
+          .btn-whatsapp {
+            background-color: var(--blue-500);
+            color: var(--card-bg);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: var(--blue-900);
+            }
+
+            i {
+              font-size: 1.125rem;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.payment-methods-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: 0 2px 4px 0 var(--shadow-color);
+  border: 1px solid var(--border-color);
+
+  h4 {
+    color: var(--text-main);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .payment-methods-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    .payment-method-item {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background-color: var(--bg-soft);
+
+      .method-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+
+        .method-name {
+          font-weight: 600;
+          color: var(--text-main);
+        }
+
+        .method-percentage {
+          font-weight: 600;
+          color: var(--blue-500);
+        }
+      }
+
+      .method-amount {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.25rem;
+      }
+
+      .method-total {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+    }
+  }
+}
+
+/* Table */
+.table-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 4px 0 var(--shadow-color);
+  border: 1px solid var(--border-color);
+  margin: 0 2rem 2rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    color: var(--text-main);
+    font-size: 0.875rem;
+  }
+
+  tbody tr {
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--bg-soft);
+    }
+  }
+
+  .invoice-info {
+    .invoice-number {
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.25rem;
+    }
+
+    .invoice-period {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+  }
+}
+
+/* Status tags */
+.tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.tag-success {
+    background-color: var(--accent-softer);
+    color: var(--blue-500);
+  }
+
+  &.tag-warning {
+    background-color: var(--accent-soft);
+    color: var(--blue-500);
+  }
+
+  &.tag-danger {
+    background-color: var(--accent-soft);
+    color: var(--blue-500);
+  }
+
+  &.tag-secondary {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+  }
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-action {
+  padding: 0.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+  }
+
+  &.primary {
+    color: var(--blue-500);
+
+    &:hover {
+      background-color: var(--accent-softer);
+    }
+  }
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+
+  button {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background-color: var(--blue-500);
+      color: var(--card-bg);
+      border-color: var(--blue-500);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  span {
+    color: var(--text-main);
+    font-weight: 500;
+  }
+}
+
+/* Modal content */
+.payment-modal-content {
+  .invoice-summary {
+    text-align: center;
+    padding: 1.5rem;
+    background-color: var(--bg-soft);
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+
+    h4 {
+      color: var(--text-main);
+      margin: 0 0 0.5rem 0;
+      font-size: 1.125rem;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin: 0 0 1rem 0;
+      font-size: 0.875rem;
+    }
+
+    .amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--blue-500);
+    }
+  }
+
+  .payment-instructions {
+    h5 {
+      color: var(--text-main);
+      margin: 0 0 1rem 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin: 0 0 1rem 0;
+      line-height: 1.5;
+    }
+
+    .pix-key {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background-color: var(--bg-soft);
+      border-radius: 0.5rem;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+
+      span {
+        flex: 1;
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--text-main);
+        font-size: 1rem;
+      }
+
+      .btn-copy {
+        background: none;
+        border: none;
+        color: var(--blue-500);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+          background-color: var(--accent-softer);
+        }
+      }
+    }
+
+    .btn-whatsapp {
+      background-color: var(--blue-500);
+      color: var(--card-bg);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--blue-900);
+      }
+
+      i {
+        font-size: 1.25rem;
+      }
+    }
+  }
+}
+
+/* Details grid */
+.details-grid {
+  display: grid;
+  gap: 1rem;
+
+  p {
+    margin: 0;
+    padding: 0.75rem;
+    background-color: var(--bg-soft);
+    border-radius: 0.5rem;
+    color: var(--text-main);
+
+    strong {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+  }
+
+  .current-invoice-section {
+    padding: 0 1rem;
+  }
+
+  .table-card {
+    margin: 0 1rem 2rem;
+  }
+
+  .user-table {
+    font-size: 0.75rem;
+
+    th, td {
+      padding: 0.5rem;
+    }
+  }
+
+  .action-buttons {
+    justify-content: center;
+  }
+
+  .payment-steps {
+    .step {
+      .step-content {
+        .btn-whatsapp {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .current-invoice-card {
+    padding: 1rem;
+
+    .invoice-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+
+      .invoice-status {
+        text-align: center;
+      }
+    }
+  }
+
+  .payment-methods-card {
+    padding: 1rem;
+  }
+}
+
+/* Utils */
+.width-max {
+  width: 100%;
+}
+
+.btn-primary {
+  background-color: var(--blue-500);
+  color: var(--card-bg);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--blue-900);
+  }
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: var(--blue-500);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--blue-900);
+  }
+}
+
+/* Filter tabs spacing */
+app-filter-tabs {
+  margin: 0 2rem 2rem;
+  display: block;
+}

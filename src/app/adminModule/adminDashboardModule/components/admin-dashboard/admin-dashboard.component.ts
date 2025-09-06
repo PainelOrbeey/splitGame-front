@@ -56,7 +56,7 @@ interface Invoice {
 @Component({
   selector: "app-admin-dashboard",
   standalone: true,
-  imports: [CommonModule, RouterModule,UserMenuComponent],
+  imports: [CommonModule, RouterModule, UserMenuComponent],
   templateUrl: "./admin-dashboard.component.html",
   styleUrls: ["./admin-dashboard.component.scss"],
 })
@@ -117,6 +117,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       chartData: [50, 45, 40, 35, 30, 25, 20, 15],
     },
     {
+      title: "Taxa de Conversão",
+      value: "R$ 1.262",
+      change: "+8%",
+      changeType: "positive",
+      period: "vs anterior, 28 dias",
+      chartType: "line",
+      chartData: [15, 20, 25, 30, 35, 40, 45, 50],
+    },
+
+    {
       title: "Boleto",
       value: "R$ 2.100",
       change: "+2%",
@@ -172,6 +182,36 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       type: "Elétrico",
       status: "failed",
       amount: "R$ 300",
+    },
+    {
+      no: "04",
+      idCustomer: "#06496",
+      customerName: "Alice Johnson",
+      customerAddress: "789 Oak St",
+      date: "07 Set 2019",
+      type: "Elétrico",
+      status: "completed",
+      amount: "R$ 400",
+    },
+    {
+      no: "05",
+      idCustomer: "#06495",
+      customerName: "Bob Brown",
+      customerAddress: "321 Pine St",
+      date: "08 Set 2019",
+      type: "Elétrico",
+      status: "pending",
+      amount: "R$ 500",
+    },
+    {
+      no: "06",
+      idCustomer: "#06494",
+      customerName: "Charlie Davis",
+      customerAddress: "654 Cedar St",
+      date: "09 Set 2019",
+      type: "Elétrico",
+      status: "failed",
+      amount: "R$ 600",
     }
   ]
 

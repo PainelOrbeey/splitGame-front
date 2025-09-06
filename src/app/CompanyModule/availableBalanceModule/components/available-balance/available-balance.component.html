@@ -6,9 +6,44 @@
     </app-user-menu>
   </header>
 
-  <!-- Filter Tabs -->
 
 
+  <!-- Balance Overview Cards -->
+  <div class="balance-overview">
+    <div class="balance-card main-balance">
+      <div class="balance-header">
+        <h3>Saldo Disponível</h3>
+        <div class="balance-actions">
+          <button class="withdraw-btn" (click)="openWithdrawalModal()" [disabled]="balance.availableBalance <= 0">
+            <i class="pi pi-money-bill"></i>
+            Sacar
+          </button>
+          <button class="refresh-btn" (click)="refreshBalance()" [disabled]="refreshing">
+            <i class="pi pi-refresh" [class.spinning]="refreshing"></i>
+          </button>
+        </div>
+      </div>
+      <div class="balance-value main">{{ fmt(balance.availableBalance) }}</div>
+      <div class="balance-info">
+        <small>Última atualização: {{ balance.lastUpdate | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Saldo Em Protesto</h4>
+      <div class="balance-value protest">{{ fmt(balance.protestBalance) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>Reserva Financeira</h4>
+      <div class="balance-value reserve">{{ fmt(balance.financialReserve) }}</div>
+    </div>
+
+    <div class="balance-card">
+      <h4>A Receber</h4>
+      <div class="balance-value receive">{{ fmt(balance.toReceive) }}</div>
+    </div>
+  </div>
 
   <!-- Summary Metrics -->
   <div class="summary-grid">
@@ -34,37 +69,7 @@
       icon="pi pi-clock">
     </app-summary-card>
   </div>
-  <!-- Balance Overview Cards -->
-  <div class="balance-overview">
-    <div class="balance-card main-balance">
-      <div class="balance-header">
-        <h3>Saldo Disponível</h3>
-        <button class="refresh-btn" (click)="refreshBalance()" [disabled]="refreshing">
-          <i class="pi pi-refresh" [class.spinning]="refreshing"></i>
-        </button>
-      </div>
-      <div class="balance-value main">{{ fmt(balance.availableBalance) }}</div>
-      <div class="balance-info">
-        <small>Última atualização: {{ balance.lastUpdate | date:'dd/MM/yyyy HH:mm' }}</small>
-      </div>
-    </div>
-
-    <div class="balance-card">
-      <h4>Saldo Em Protesto</h4>
-      <div class="balance-value protest">{{ fmt(balance.protestBalance) }}</div>
-    </div>
-
-    <div class="balance-card">
-      <h4>Reserva Financeira</h4>
-      <div class="balance-value reserve">{{ fmt(balance.financialReserve) }}</div>
-    </div>
-
-    <div class="balance-card">
-      <h4>A Receber</h4>
-      <div class="balance-value receive">{{ fmt(balance.toReceive) }}</div>
-    </div>
-  </div>
-
+  <!-- Filter Tabs -->
   <app-filter-tabs [tabs]="[
         { label: 'Todos', value: '' },
         { label: 'Pendentes', value: 'pending' },
@@ -156,7 +161,7 @@
 
 
   </div>
-  <orb-pagination [currentPage]="currentPage" [totalPages]="filteredTransactions.length"
+  <orb-pagination [currentPage]="currentPage" [totalPages]="Math.ceil(filteredTransactions.length / itemsPerPage)"
     (pageChange)="onPageChange($event)">
   </orb-pagination>
   <!-- Sidebar Filters -->
@@ -242,4 +247,81 @@
       <button class="btn-text" (click)="clearFilters()">Limpar</button>
     </div>
   </app-sidebar-filters>
+
+  <div class="withdrawal-modal-overlay" *ngIf="withdrawalModalVisible" (click)="closeWithdrawalModal()">
+    <div class="withdrawal-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Solicitar Saque</h3>
+        <button class="close-btn" (click)="closeWithdrawalModal()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-content">
+        <!-- Available Balance Card -->
+        <div class="available-balance-card">
+          <div class="balance-info">
+            <span class="balance-label">Valor Disponível</span>
+            <div class="balance-amount">{{ fmt(balance.availableBalance) }}</div>
+            <span class="balance-subtitle">Comissões prontas para saque</span>
+          </div>
+          <div class="balance-icon">
+            <i class="pi pi-calendar"></i>
+          </div>
+        </div>
+
+        <!-- Withdrawal Form -->
+        <div class="withdrawal-form">
+          <h4>Dados da Solicitação</h4>
+
+          <!-- Amount Input -->
+          <div class="form-group">
+            <label>Valor a Solicitar</label>
+            <div class="amount-input-group">
+              <input type="number" [(ngModel)]="withdrawalForm.amount" placeholder="0" min="0"
+                [max]="balance.availableBalance" class="amount-input">
+              <button class="max-btn" (click)="setMaxAmount()">Máximo</button>
+            </div>
+            <small class="amount-info">Valor máximo disponível: {{ fmt(balance.availableBalance) }}</small>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="form-group">
+            <label>Método de Pagamento</label>
+            <div class="payment-methods">
+              <div *ngFor="let method of withdrawalMethods" class="payment-method" [class.selected]="method.selected"
+                (click)="selectPaymentMethod(method.id)">
+                <div class="method-icon">
+                  <i class="pi" [ngClass]="method.icon"></i>
+                </div>
+                <div class="method-info">
+                  <div class="method-name">{{ method.name }}</div>
+                  <div class="method-description">{{ method.description }}</div>
+                  <div class="method-min">Min: {{ fmt(method.minAmount) }}</div>
+                </div>
+                <div class="method-selector">
+                  <div class="radio-button" [class.checked]="method.selected"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observations -->
+          <div class="form-group">
+            <label>Observações (Opcional)</label>
+            <textarea [(ngModel)]="withdrawalForm.observations"
+              placeholder="Adicione observações sobre sua solicitação..." rows="3"
+              class="observations-input"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeWithdrawalModal()">Cancelar</button>
+        <button class="btn-submit" (click)="submitWithdrawal()" [disabled]="!isValidWithdrawal()">
+          Solicitar Saque
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

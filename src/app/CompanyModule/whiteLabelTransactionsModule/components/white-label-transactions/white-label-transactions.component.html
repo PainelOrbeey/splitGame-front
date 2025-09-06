@@ -10,11 +10,11 @@
       icon="pi pi-receipt" delta="+8.3%" deltaType="up">
     </app-summary-card>
 
-    <app-summary-card class="width-max" title="Volume Total" [value]="fmt(metrics.totalVolume, 'currency', 0, 0)"
+    <app-summary-card class="width-max" title="Faturamento Total" [value]="fmt(metrics.totalVolume, 'currency', 0, 0)"
       icon="pi pi-dollar" delta="+12.5%" deltaType="up">
     </app-summary-card>
 
-    <app-summary-card class="width-max" title="Comissões Totais"
+    <app-summary-card class="width-max" title="Total Reembolso"
       [value]="fmt(metrics.totalCommissions, 'currency', 0, 0)" icon="pi pi-coins" delta="+15.2%" deltaType="up">
     </app-summary-card>
 
@@ -47,44 +47,30 @@
       <table class="transactions-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Parceiro/Marca</th>
             <th>Cliente</th>
-            <th>Tipo</th>
             <th>Valor</th>
-            <th>Taxa</th>
-            <th>Líquido</th>
             <th>Status</th>
+            <th>Produto</th>
             <th>Data</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let transaction of paginatedTransactions">
-            <td>{{ transaction.id }}</td>
-            <td>
-              <div class="partner-info">
-                <span class="name">{{ transaction.partnerName }}</span>
-                <small class="brand">{{ transaction.brandName }}</small>
-              </div>
-            </td>
+
             <td>
               <div class="customer-info">
                 <span class="name">{{ transaction.customerName || 'N/A' }}</span>
                 <small class="email">{{ transaction.customerEmail }}</small>
               </div>
             </td>
-            <td>
-              <span class="tag type-tag">{{ getTypeLabel(transaction.transactionType) }}</span>
-            </td>
             <td>{{ fmt(transaction.amount, 'currency', 0, 0) }}</td>
-            <td>{{ fmt(transaction.fee, 'currency', 0, 0) }}</td>
-            <td>{{ fmt(transaction.netAmount, 'currency', 0, 0) }}</td>
             <td>
               <span class="tag" [ngClass]="getStatusClass(transaction.status)">
                 {{ getStatusLabel(transaction.status) }}
               </span>
             </td>
+            <td>Produto demo</td>
             <td>{{ transaction.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <button class="btn-action" (click)="viewDetails(transaction)">

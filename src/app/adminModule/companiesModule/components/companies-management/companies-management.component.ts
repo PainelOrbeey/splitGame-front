@@ -8,6 +8,8 @@ import { SidebarFiltersComponent } from "../../../../../shared/components/sideba
 import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
 import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
 import { PaginationComponent } from "../../../../../shared/components/pagination/pagination.component"
+import { Router } from "@angular/router"
+import { ImpersonationService } from "../../../../../shared/services/impersonation.service"
 
 @Component({
   selector: "app-companies-management",
@@ -176,6 +178,10 @@ export class CompaniesManagementComponent implements OnInit {
     ],
   }
 
+constructor(
+  private router: Router,
+  private impersonation: ImpersonationService
+) {}
   ngOnInit() {
     this.loadCompanies()
     this.updateMetrics()
@@ -275,6 +281,13 @@ export class CompaniesManagementComponent implements OnInit {
 
     this.applyFilters()
   }
+impersonateAndGo(company: Company){
+  this.impersonation.start(
+    { id: company.id, name: company.name },
+    { name: 'Admin Sistema', email: 'admin@sistema.com' } // opcional
+  );
+  this.router.navigate(['/company/dashboard']);
+}
 
   updateMetrics() {
     const filtered = this.getFilteredCompanies()

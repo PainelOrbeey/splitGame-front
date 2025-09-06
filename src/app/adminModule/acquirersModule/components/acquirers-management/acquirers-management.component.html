@@ -1,0 +1,303 @@
+<section class="container-wrapper">
+  <header class="header">
+    <div class="header-content">
+      <h2>Adquirentes</h2>
+      <p class="header-description">Aqui estão todas as suas adquirentes configuradas. Caso queira adicionar mais
+        opções, entre em contato com nosso time.</p>
+    </div>
+    <app-user-menu [username]="'Admin'" [email]="'admin@orbeey.com'" [saldo]="0" [saldoProtesto]="0" />
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <app-summary-card class="width-max" title="Total de Adquirentes" [value]="metrics.totalAcquirers.value.toString()"
+      [delta]="metrics.totalAcquirers.delta" [deltaType]="metrics.totalAcquirers.deltaType" icon="pi pi-building">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Adquirentes Ativos" [value]="metrics.activeAcquirers.value.toString()"
+      [delta]="metrics.activeAcquirers.delta" [deltaType]="metrics.activeAcquirers.deltaType" icon="pi pi-check-circle">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Volume Total" [value]="formatCurrency(metrics.totalVolume.value)"
+      [delta]="metrics.totalVolume.delta" [deltaType]="metrics.totalVolume.deltaType" icon="pi pi-chart-line">
+    </app-summary-card>
+
+    <app-summary-card class="width-max" title="Taxa de Sucesso Média"
+      [value]="formatPercentage(metrics.averageSuccessRate.value)" [delta]="metrics.averageSuccessRate.delta"
+      [deltaType]="metrics.averageSuccessRate.deltaType" icon="pi pi-verified">
+    </app-summary-card>
+  </div>
+
+  <!-- Filter Tabs -->
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos', value: '' },
+      { label: 'Cartão de Crédito', value: 'credit' },
+      { label: 'Cartão de Débito', value: 'debit' },
+      { label: 'PIX', value: 'pix' },
+      { label: 'Boleto', value: 'boleto' }
+    ]" [selected]="filters.type" (selectedChange)="setCategory($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event" searchPlaceholder="Buscar adquirentes..."
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <!-- Action Bar -->
+  <div class="action-bar">
+    <div class="results-info">
+      <span>{{ filteredAcquirers.length }} adquirentes encontrados</span>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="openAddAcquirer()">
+        <i class="pi pi-plus"></i>
+        Adicionar Adquirente
+      </button>
+    </div>
+  </div>
+
+  <!-- Acquirers Grid -->
+  <div class="acquirers-grid">
+    <div *ngFor="let acquirer of pageAcquirers" class="acquirer-card">
+      <div class="card-header">
+        <div class="acquirer-info">
+          <h3 class="acquirer-name">{{ acquirer.name }}</h3>
+          <p class="using-since">USANDO A ADQUIRENTE DESDE</p>
+          <p class="since-date">{{ formatDate(acquirer.usingSince || acquirer.createdAt) }}</p>
+        </div>
+      </div>
+
+      <div class="card-logo">
+        <img [src]="acquirer.logo" [alt]="acquirer.name" class="acquirer-logo">
+      </div>
+
+      <div class="card-footer">
+        <div class="payment-methods">
+          <div class="method-toggle" *ngIf="acquirer.paymentMethods.pix">
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="acquirer.paymentMethods.pix"
+                (change)="togglePaymentMethod(acquirer, 'pix')">
+              <span class="slider"></span>
+            </label>
+            <span class="method-label">PIX</span>
+          </div>
+
+          <div class="method-toggle" *ngIf="acquirer.paymentMethods.creditCard">
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="acquirer.paymentMethods.creditCard"
+                (change)="togglePaymentMethod(acquirer, 'creditCard')">
+              <span class="slider"></span>
+            </label>
+            <span class="method-label">Cartão</span>
+          </div>
+
+          <div class="method-toggle" *ngIf="acquirer.paymentMethods.boleto">
+            <label class="toggle-switch">
+              <input type="checkbox" [checked]="acquirer.paymentMethods.boleto"
+                (change)="togglePaymentMethod(acquirer, 'boleto')">
+              <span class="slider"></span>
+            </label>
+            <span class="method-label">Boleto</span>
+          </div>
+        </div>
+
+        <button class="btn-actions" (click)="openAcquirerDetail(acquirer)">
+          Ações
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="filteredAcquirers.length === 0" class="empty-state">
+    <i class="pi pi-building"></i>
+    <h3>Nenhum adquirente encontrado</h3>
+    <p>Tente ajustar os filtros ou adicionar um novo adquirente</p>
+    <button class="btn-primary" (click)="clearFilters()">Limpar Filtros</button>
+  </div>
+
+  <!-- Pagination -->
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalPages" (pageChange)="goToPage($event)">
+  </orb-pagination>
+
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [class.open]="sidebarVisible" [(visible)]="sidebarVisible" width="380px">
+    <h3 header>Filtros Avançados</h3>
+
+    <section class="drawer-content">
+      <!-- Status Filter -->
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status">
+          <option value="">Todos os status</option>
+          <option value="active">Ativo</option>
+          <option value="inactive">Inativo</option>
+          <option value="maintenance">Manutenção</option>
+        </select>
+      </div>
+
+      <!-- Integration Filter -->
+      <div class="field">
+        <span class="caption">Integração</span>
+        <select [(ngModel)]="filters.integration">
+          <option value="">Todas as integrações</option>
+          <option value="api">API REST</option>
+          <option value="sdk">SDK</option>
+          <option value="webhook">Webhook</option>
+        </select>
+      </div>
+
+      <!-- Environment Filter -->
+      <div class="field">
+        <span class="caption">Ambiente</span>
+        <select [(ngModel)]="filters.environment">
+          <option value="">Todos os ambientes</option>
+          <option value="production">Produção</option>
+          <option value="sandbox">Sandbox</option>
+        </select>
+      </div>
+
+      <!-- Volume Range -->
+      <div class="field">
+        <span class="caption">Volume Mensal</span>
+        <div class="range-inputs">
+          <input type="number" [(ngModel)]="filters.minVolume" placeholder="Mínimo" min="0">
+          <span>até</span>
+          <input type="number" [(ngModel)]="filters.maxVolume" placeholder="Máximo" min="0">
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="field">
+        <span class="caption">Data de Criação</span>
+        <div class="date-range">
+          <input type="date" [(ngModel)]="filters.dateFrom">
+          <span>até</span>
+          <input type="date" [(ngModel)]="filters.dateTo">
+        </div>
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible = false">Aplicar Filtros</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar Tudo</button>
+    </div>
+  </app-sidebar-filters>
+
+  <!-- Acquirer Detail Dialog -->
+  <app-custom-dialog [(visible)]="acquirerDetailVisible"
+    [title]="'Detalhes do Adquirente: ' + (selectedAcquirer?.name || '')" [actions]="[
+      {id:'configure', label:'Configurar', type:'primary'},
+      {id:'close', label:'Fechar', type:'text'}
+    ]" (action)="handleDialogAction($event)" width="1000px" maxHeight="90vh">
+
+    <div *ngIf="selectedAcquirer" class="acquirer-detail">
+      <!-- Basic Info -->
+      <div class="detail-section">
+        <h4>Informações Básicas</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="label">Nome:</span>
+            <span class="value">{{ selectedAcquirer.name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Merchant ID:</span>
+            <span class="value">{{ selectedAcquirer.config.merchantId }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Tipo:</span>
+            <span class="value">{{ getTypeLabel(selectedAcquirer.type) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Status:</span>
+            <span class="badge" [ngClass]="getStatusClass(selectedAcquirer.status)">
+              {{ getStatusLabel(selectedAcquirer.status) }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Integração:</span>
+            <span class="value">{{ getIntegrationLabel(selectedAcquirer.integration) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Ambiente:</span>
+            <span class="value">{{ selectedAcquirer.environment | titlecase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="detail-section">
+        <h4>Métricas de Performance</h4>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Volume Total</div>
+            <div class="metric-value">{{ formatCurrency(selectedAcquirer.metrics.totalVolume) }}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Transações</div>
+            <div class="metric-value">{{ formatNumber(selectedAcquirer.metrics.totalTransactions) }}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa de Sucesso</div>
+            <div class="metric-value">{{ formatPercentage(selectedAcquirer.metrics.successRate) }}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Tempo de Resposta</div>
+            <div class="metric-value">{{ formatResponseTime(selectedAcquirer.metrics.averageResponseTime) }}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Uptime</div>
+            <div class="metric-value">{{ formatPercentage(selectedAcquirer.metrics.uptime) }}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Taxa de Erro</div>
+            <div class="metric-value">{{ formatPercentage(selectedAcquirer.metrics.errorRate) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div class="detail-section">
+        <h4>Métodos de Pagamento</h4>
+        <div class="payment-methods-detail">
+          <div class="method-item" [ngClass]="{'enabled': selectedAcquirer.paymentMethods.pix}">
+            <i class="pi pi-mobile"></i>
+            <span>PIX</span>
+            <span class="status">{{ selectedAcquirer.paymentMethods.pix ? 'Ativo' : 'Inativo' }}</span>
+          </div>
+          <div class="method-item" [ngClass]="{'enabled': selectedAcquirer.paymentMethods.creditCard}">
+            <i class="pi pi-credit-card"></i>
+            <span>Cartão de Crédito</span>
+            <span class="status">{{ selectedAcquirer.paymentMethods.creditCard ? 'Ativo' : 'Inativo' }}</span>
+          </div>
+          <div class="method-item" [ngClass]="{'enabled': selectedAcquirer.paymentMethods.debitCard}">
+            <i class="pi pi-credit-card"></i>
+            <span>Cartão de Débito</span>
+            <span class="status">{{ selectedAcquirer.paymentMethods.debitCard ? 'Ativo' : 'Inativo' }}</span>
+          </div>
+          <div class="method-item" [ngClass]="{'enabled': selectedAcquirer.paymentMethods.boleto}">
+            <i class="pi pi-file"></i>
+            <span>Boleto</span>
+            <span class="status">{{ selectedAcquirer.paymentMethods.boleto ? 'Ativo' : 'Inativo' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support -->
+      <div class="detail-section">
+        <h4>Informações de Suporte</h4>
+        <div class="support-info">
+          <div class="support-item">
+            <i class="pi pi-envelope"></i>
+            <span>{{ selectedAcquirer.support.email }}</span>
+          </div>
+          <div class="support-item">
+            <i class="pi pi-phone"></i>
+            <span>{{ selectedAcquirer.support.phone }}</span>
+          </div>
+          <div class="support-item">
+            <i class="pi pi-book"></i>
+            <a [href]="selectedAcquirer.support.documentation" target="_blank">Documentação</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

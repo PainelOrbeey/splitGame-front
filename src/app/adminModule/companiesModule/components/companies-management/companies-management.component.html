@@ -5,8 +5,10 @@
     </app-user-menu>
   </header>
 
+  <!-- Filter Tabs -->
 
 
+  <!-- Summary Cards -->
   <div class="summary-grid">
     <app-summary-card class="width-max" title="Total de Empresas" [value]="fmt(metrics.totalCompanies, 'int')"
       icon="pi pi-building">
@@ -42,72 +44,108 @@
     (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar empresa ou CNPJ…"
     (export)="exportCSV()" (filterClick)="sidebarVisible = true">
   </app-filter-tabs>
-  <div class="table-card">
-    <div class="table-header">
+  <!-- Companies Cards Container -->
+  <div class="companies-container">
+    <div class="companies-header">
       <h3>Lista de Empresas ({{ totalItems }})</h3>
     </div>
 
-    <div class="table-scroll">
-      <table class="user-table">
-        <thead>
-          <tr>
-            <th>Empresa</th>
-            <th>CNPJ</th>
-            <th>Categoria</th>
-            <th>Status</th>
-            <th>KYC</th>
-            <th>Receita</th>
-            <th>Funcionários</th>
-            <th>Estado</th>
-            <th>Criado em</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let company of paginatedCompanies">
-            <td>
-              <div class="user-info">
-                <div>
-                  <div class="name">{{ company.name }}</div>
-                  <div class="handle">{{ company.email }}</div>
-                </div>
-              </div>
-            </td>
-            <td>{{ company.cnpj }}</td>
-            <td>{{ company.category }}</td>
-            <td>
-              <span class="tag" [ngClass]="getStatusClass(company.status)">
-                {{ company.status | titlecase }}
-              </span>
-            </td>
-            <td>
+    <!-- Companies Grid -->
+    <div class="companies-grid">
+      <div *ngFor="let company of paginatedCompanies" class="company-card">
+        <!-- Company Header -->
+        <div class="company-header">
+          <div class="company-avatar">
+            <span>{{ company.name.charAt(0) }}</span>
+          </div>
+          <div class="company-info">
+            <h4 class="company-name">{{ company.name }}</h4>
+            <p class="company-cnpj">{{ company.cnpj }}</p>
+            <p class="company-email">{{ company.email }}</p>
+          </div>
+          <div class="company-status">
+            <span class="tag" [ngClass]="getStatusClass(company.status)">
+              {{ company.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Company Details -->
+        <div class="company-details">
+          <div class="detail-row">
+            <div class="detail-item">
+              <span class="label">Categoria</span>
+              <span class="value">{{ company.category }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">KYC</span>
               <span class="tag" [ngClass]="getKycStatusClass(company.kycStatus)">
                 {{ company.kycStatus | titlecase }}
               </span>
-            </td>
-            <td>{{ fmt(company.totalRevenue, 'currency') }}</td>
-            <td>{{ company.employees }}</td>
-            <td>{{ company.address.state }}</td>
-            <td>{{ company.createdAt | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="action-btn edit-btn" (click)="editCompany(company)">
-                  <i class="pi pi-pencil"></i>
-                </button>
-                <button class="action-btn view-btn" (click)="viewCompany(company)">
-                  <i class="pi pi-eye"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-item">
+              <span class="label">Receita</span>
+              <span class="value highlight">{{ fmt(company.totalRevenue, 'currency') }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Funcionários</span>
+              <span class="value">{{ company.employees }}</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-item">
+              <span class="label">Estado</span>
+              <span class="value">{{ company.address.state }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Criado em</span>
+              <span class="value">{{ company.createdAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-item full-width">
+              <span class="label">Volume Mensal</span>
+              <span class="value highlight">{{ fmt(company.monthlyVolume, 'currency') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Company Actions -->
+        <div class="company-actions">
+          <button class="action-btn edit-btn" (click)="editCompany(company)" title="Editar">
+            <i class="pi pi-pencil"></i>
+            <span>Editar</span>
+          </button>
+          <button class="action-btn view-btn" (click)="viewCompany(company)" title="Visualizar">
+            <i class="pi pi-eye"></i>
+            <span>Ver</span>
+          </button>
+          <button class="action-btn login-btn" (click)="impersonateAndGo(company)" title="Entrar como">
+            <i class="pi pi-sign-in"></i>
+            <span>Entrar</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
-    </orb-pagination>
-  </div>
+    <!-- Empty State -->
+    <div *ngIf="paginatedCompanies.length === 0" class="empty-state">
+      <i class="pi pi-building"></i>
+      <h3>Nenhuma empresa encontrada</h3>
+      <p>Tente ajustar os filtros ou adicionar uma nova empresa.</p>
+    </div>
 
+
+  </div>
+  <!-- Pagination -->
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+  </orb-pagination>
+  <!-- Sidebar Filters -->
   <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
     <h3 header>Filtros de Empresas</h3>
 
@@ -209,6 +247,7 @@
     </div>
   </app-sidebar-filters>
 
+  <!-- Company Details Dialog -->
   <app-custom-dialog [(visible)]="companyDialogVisible" title="Detalhes da Empresa" [actions]="[
       {id:'close', label:'Fechar', type:'text'}
     ]" (action)="handleDialogAction($event)" width="900px" maxHeight="90vh">
@@ -306,6 +345,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Edit Company Dialog -->
   <app-custom-dialog [(visible)]="editCompanyDialogVisible" title="Detalhes da Empresa" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Fechar', type:'text'}
@@ -386,6 +426,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Fees Dialog -->
   <app-custom-dialog [(visible)]="feesDialogVisible" title="Alterar Taxas" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Fechar', type:'text'}
@@ -462,6 +503,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Permissions Dialog -->
   <app-custom-dialog [(visible)]="permissionsDialogVisible" title="Alterar Permissões" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Cancelar', type:'text'}
@@ -535,6 +577,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Financial Reserves Dialog -->
   <app-custom-dialog [(visible)]="financialReservesDialogVisible" title="Reservas Financeiras" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Cancelar', type:'text'}
@@ -573,6 +616,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Acquirer Dialog -->
   <app-custom-dialog [(visible)]="acquirerDialogVisible" title="Alterar Adquirente" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Cancelar', type:'text'}
@@ -608,6 +652,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- BaaS Dialog -->
   <app-custom-dialog [(visible)]="baasDialogVisible" title="Alterar BaaS" [actions]="[
       {id:'save', label:'Salvar', type:'primary'},
       {id:'close', label:'Cancelar', type:'text'}
@@ -643,6 +688,7 @@
     </div>
   </app-custom-dialog>
 
+  <!-- Subaccount Dialog -->
   <app-custom-dialog [(visible)]="subaccountDialogVisible" title="Visualizar Subconta" [actions]="[
       {id:'close', label:'Fechar', type:'text'}
     ]" (action)="handleSubaccountDialogAction($event)" width="800px">

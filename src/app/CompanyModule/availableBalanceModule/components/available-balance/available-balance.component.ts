@@ -9,18 +9,17 @@ import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { CustomDialogComponent } from "../../../../../shared/components/custom-dialog/custom-dialog.component"
 import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component"
+import { PaginationComponent } from "../../../../../shared/components/pagination/pagination.component"
 import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component"
 import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
 import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
-import { PaginationComponent } from "../../../../../shared/components/pagination/pagination.component"
 
 @Component({
   selector: "app-available-balance",
   templateUrl: "./available-balance.component.html",
   styleUrls: ["./available-balance.component.scss"],
-       standalone: true,
-        imports: [CommonModule,PaginationComponent, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent, SidebarFiltersComponent, CustomDialogComponent],
-
+    standalone: true,
+  imports: [CommonModule, FormsModule, UserMenuComponent, FilterTabsComponent, SummaryCardComponent,PaginationComponent, SidebarFiltersComponent, CustomDialogComponent],
 })
 export class AvailableBalanceComponent implements OnInit {
   // Data properties
@@ -41,6 +40,42 @@ export class AvailableBalanceComponent implements OnInit {
     monthlyMovement: 0,
     pendingTransactions: 0,
   }
+  public Math = Math; // <-- expõe Math pro template
+
+  // Withdrawal properties
+  withdrawalModalVisible = false
+  withdrawalForm = {
+    amount: 0,
+    paymentMethod: "pix",
+    observations: "",
+  }
+
+  withdrawalMethods = [
+    {
+      id: "pix",
+      name: "PIX",
+      description: "Transferência instantânea",
+      minAmount: 10.0,
+      icon: "pi-mobile",
+      selected: true,
+    },
+    {
+      id: "bank_transfer",
+      name: "Transferência Bancária",
+      description: "TED/DOC - 1 dia útil",
+      minAmount: 50.0,
+      icon: "pi-building",
+      selected: false,
+    },
+    {
+      id: "paypal",
+      name: "PayPal",
+      description: "Pagamento internacional",
+      minAmount: 25.0,
+      icon: "pi-paypal",
+      selected: false,
+    },
+  ]
 
   // UI States
   sidebarVisible = false
@@ -217,6 +252,76 @@ export class AvailableBalanceComponent implements OnInit {
       this.loadData()
       this.refreshing = false
     }, 1500)
+  }
+
+  // Withdrawal methods
+  openWithdrawalModal() {
+    this.withdrawalModalVisible = true
+    this.withdrawalForm = {
+      amount: 0,
+      paymentMethod: "pix",
+      observations: "",
+    }
+  }
+
+  closeWithdrawalModal() {
+    this.withdrawalModalVisible = false
+  }
+
+  setMaxAmount() {
+    this.withdrawalForm.amount = this.balance.availableBalance
+  }
+
+  selectPaymentMethod(methodId: string) {
+    this.withdrawalForm.paymentMethod = methodId
+    this.withdrawalMethods.forEach((method) => {
+      method.selected = method.id === methodId
+    })
+  }
+
+  getSelectedMethod() {
+    return this.withdrawalMethods.find((method) => method.selected) || this.withdrawalMethods[0]
+  }
+
+  isValidWithdrawal(): boolean {
+    const selectedMethod = this.getSelectedMethod()
+    return (
+      this.withdrawalForm.amount >= selectedMethod.minAmount &&
+      this.withdrawalForm.amount <= this.balance.availableBalance
+    )
+  }
+
+  submitWithdrawal() {
+    if (!this.isValidWithdrawal()) {
+      return
+    }
+
+    console.log("Submitting withdrawal:", this.withdrawalForm)
+
+    // Simulate API call
+    setTimeout(() => {
+      // Add withdrawal transaction to history
+      const newTransaction: BalanceTransaction = {
+        id: Date.now().toString(),
+        date: new Date(),
+        description: `Saque solicitado - ${this.getSelectedMethod().name}`,
+        type: "saida",
+        status: "processing",
+        entryValue: 0,
+        exitValue: this.withdrawalForm.amount,
+        total: -this.withdrawalForm.amount,
+        reference: `WTH${Date.now()}`,
+        category: "withdrawal",
+        destination: this.getSelectedMethod().name,
+      }
+
+      this.transactions.unshift(newTransaction)
+      this.updateMetrics()
+      this.closeWithdrawalModal()
+
+      // Show success message (you can implement toast notification here)
+      alert("Solicitação de saque enviada com sucesso!")
+    }, 1000)
   }
 
   // Utility methods

@@ -1,0 +1,252 @@
+<section class="container-wrapper">
+  <header class="header">
+    <h2>Painel de Cobranças ({{ metrics.totalInvoices }}) registros</h2>
+    <app-user-menu [username]="'Admin Sistema'" [email]="'admin@sistema.com'" [saldo]="0" [saldoProtesto]="0">
+    </app-user-menu>
+  </header>
+
+  <div class="summary-grid">
+    <!-- <app-summary-card class="width-max" title="Total de Faturas" [value]="fmt(metrics.totalInvoices, 'int')"
+      icon="pi pi-file-text">
+    </app-summary-card> -->
+    <app-summary-card class="width-max" title="Fatura Atual" [value]="fmt(metrics.currentInvoiceAmount, 'currency')"
+      icon="pi pi-clock">
+    </app-summary-card>
+    <app-summary-card class="width-max" title="Total Pago" [value]="fmt(metrics.totalPaidAmount, 'currency')"
+      icon="pi pi-check-circle">
+    </app-summary-card>
+    <app-summary-card class="width-max" title="Valor Pendente" [value]="fmt(metrics.pendingAmount, 'currency')"
+      icon="pi pi-exclamation-triangle">
+    </app-summary-card>
+    <app-summary-card class="width-max" title="Receita Total" [value]="fmt(metrics.totalRevenue, 'currency')"
+      icon="pi pi-dollar">
+    </app-summary-card>
+    <app-summary-card class="width-max" title="Ticket Médio" [value]="fmt(metrics.averageInvoiceValue, 'currency')"
+      icon="pi pi-chart-bar">
+    </app-summary-card>
+  </div>
+
+  <!-- Current Invoice Section -->
+  <div class="current-invoice-section">
+    <div class="current-invoice-card">
+      <div class="invoice-header">
+        <h3>Fatura Atual</h3>
+        <div class="invoice-status">
+          <span class="status-badge pending">em andamento</span>
+          <div class="invoice-amount">{{ fmt(currentInvoice.amount, 'currency') }}</div>
+        </div>
+      </div>
+
+      <div class="total-paid">
+        <span>Total em pedidos pagos: <strong>{{ fmt(metrics.totalPaidAmount, 'currency') }}</strong></span>
+      </div>
+
+      <div class="payment-section">
+        <h4>Pagamento em PIX</h4>
+        <div class="payment-steps">
+          <div class="step">
+            <div class="step-number">01</div>
+            <div class="step-content">
+              <h5>Realize o Pagamento</h5>
+              <p>Pague via Pix utilizando a chave:</p>
+              <div class="pix-key">
+                <span>{{ pixKey }}</span>
+                <button class="btn-copy" (click)="copyPixKey()">
+                  <i class="pi pi-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-number">02</div>
+            <div class="step-content">
+              <h5>Envie o Comprovante</h5>
+              <p>Após o pagamento, envie seu comprovante.</p>
+              <button class="btn-whatsapp" (click)="sendWhatsApp()">
+                <i class="pi pi-whatsapp"></i>
+                WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods Details -->
+    <div class="payment-methods-card">
+      <h4>Detalhes da fatura atual</h4>
+      <div class="payment-methods-grid">
+        <div *ngFor="let method of currentInvoice.paymentMethods" class="payment-method-item">
+          <div class="method-header">
+            <span class="method-name">{{ getPaymentMethodLabel(method.type) }}</span>
+            <span class="method-percentage">{{ fmt(method.percentage, 'percent', 2, 2) }}</span>
+          </div>
+          <div class="method-amount">{{ fmt(method.amount, 'currency') }}</div>
+          <div class="method-total">Total em pedidos pagos: {{ fmt(method.totalPaid, 'currency') }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <app-filter-tabs [tabs]="[
+      { label: 'Todas',     value: '' },
+      { label: 'Pendentes', value: 'pending' },
+      { label: 'Pagas',     value: 'paid' },
+      { label: 'Vencidas',  value: 'overdue' }
+    ]" [selected]="filters.status" (selectedChange)="setInvoiceStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event; applyFilters()" searchPlaceholder="Buscar fatura…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
+  <!-- Invoices Table -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Vencimento</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of getPaginatedData()">
+            <td>
+              <div class="invoice-info">
+                <div class="invoice-number">{{ invoice.invoiceNumber }}</div>
+                <div class="invoice-period">{{ invoice.period }}</div>
+              </div>
+            </td>
+            <td>{{ fmt(invoice.amount, 'currency') }}</td>
+            <td>
+              <span class="tag" [ngClass]="getStatusClass(invoice.status)">
+                {{ getStatusLabel(invoice.status) }}
+              </span>
+            </td>
+            <td>{{ formatDate(invoice.dueDate) }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action" (click)="viewDetails(invoice)" title="Visualizar">
+                  <i class="pi pi-eye"></i>
+                </button>
+                <button class="btn-action" (click)="downloadInvoice(invoice)" title="Download">
+                  <i class="pi pi-download"></i>
+                </button>
+                <button *ngIf="invoice.status === 'pending'" class="btn-action primary" (click)="payInvoice(invoice)"
+                  title="Pagar">
+                  <i class="pi pi-credit-card"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        <i class="pi pi-chevron-left"></i>
+      </button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar Filters -->
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
+    <h3 header>Filtros de Fatura</h3>
+
+    <section class="drawer-content no-scrollbar">
+      <div class="field">
+        <span class="caption">Buscar</span>
+        <input type="text" [(ngModel)]="filters.search" (input)="applyFilters()" placeholder="Número ou período...">
+      </div>
+
+      <div class="field">
+        <span class="caption">Status</span>
+        <select [(ngModel)]="filters.status" (change)="applyFilters()">
+          <option value="">Todos</option>
+          <option value="pending">Pendente</option>
+          <option value="paid">Pago</option>
+          <option value="overdue">Vencido</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <span class="caption">Data início</span>
+        <input type="date" [(ngModel)]="filters.dateFrom" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Data fim</span>
+        <input type="date" [(ngModel)]="filters.dateTo" (change)="applyFilters()">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor mínimo</span>
+        <input type="number" [(ngModel)]="filters.minAmount" (input)="applyFilters()" step="0.01">
+      </div>
+
+      <div class="field">
+        <span class="caption">Valor máximo</span>
+        <input type="number" [(ngModel)]="filters.maxAmount" (input)="applyFilters()" step="0.01">
+      </div>
+    </section>
+
+    <div footer class="drawer-footer">
+      <button class="btn-primary" (click)="sidebarVisible=false; updateMetrics()">Aplicar</button>
+      <button class="btn-text" (click)="clearFilters()">Limpar</button>
+    </div>
+  </app-sidebar-filters>
+
+  <!-- Invoice Details Modal -->
+  <app-custom-dialog [(visible)]="detailsVisible" title="Detalhes da Fatura" [width]="'600px'" *ngIf="selectedInvoice">
+    <div class="details-grid">
+      <p><strong>Número:</strong> {{ selectedInvoice.invoiceNumber }}</p>
+      <p><strong>Período:</strong> {{ selectedInvoice.period }}</p>
+      <p><strong>Data de Emissão:</strong> {{ formatDate(selectedInvoice.issueDate) }}</p>
+      <p><strong>Data de Vencimento:</strong> {{ formatDate(selectedInvoice.dueDate) }}</p>
+      <p><strong>Valor:</strong> {{ fmt(selectedInvoice.amount, 'currency') }}</p>
+      <p><strong>Status:</strong> {{ getStatusLabel(selectedInvoice.status) }}</p>
+      <p *ngIf="selectedInvoice.paidDate"><strong>Data de Pagamento:</strong> {{ formatDate(selectedInvoice.paidDate) }}
+      </p>
+      <p *ngIf="selectedInvoice.paymentMethod"><strong>Método de Pagamento:</strong> {{ selectedInvoice.paymentMethod }}
+      </p>
+    </div>
+  </app-custom-dialog>
+
+  <!-- Payment Modal -->
+  <app-custom-dialog [(visible)]="showPaymentModal" title="Processar Pagamento" [width]="'500px'"
+    *ngIf="selectedInvoice">
+    <div class="payment-modal-content">
+      <div class="invoice-summary">
+        <h4>{{ selectedInvoice.invoiceNumber }}</h4>
+        <p>{{ selectedInvoice.period }}</p>
+        <div class="amount">{{ fmt(selectedInvoice.amount, 'currency') }}</div>
+      </div>
+
+      <div class="payment-instructions">
+        <h5>Instruções de Pagamento</h5>
+        <p>Use a chave PIX abaixo para realizar o pagamento:</p>
+        <div class="pix-key">
+          <span>{{ pixKey }}</span>
+          <button class="btn-copy" (click)="copyPixKey()">
+            <i class="pi pi-copy"></i>
+          </button>
+        </div>
+        <p>Após o pagamento, envie o comprovante via WhatsApp.</p>
+        <button class="btn-whatsapp" (click)="sendWhatsApp()">
+          <i class="pi pi-whatsapp"></i>
+          Enviar Comprovante
+        </button>
+      </div>
+    </div>
+  </app-custom-dialog>
+</section>

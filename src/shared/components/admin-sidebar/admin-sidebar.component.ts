@@ -68,6 +68,24 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       icon: "pi pi-microchip",
       route: "/admin/integrations",
     },
+      { label: "Cobrança",
+    icon: "pi pi-print",
+    route: "/company/charge"
+  },
+    {
+      label: "Adquirentes",
+      icon: "pi pi-credit-card",
+      route: "/admin/acquirers"
+    },
+    {
+      label: "BaaS",
+      icon: "pi pi-server",
+      route: "/admin/baas"
+    },
+      { label: "Credenciais API",
+    icon: "pi pi-key",
+    route: "/admin/api-credentials"
+  },
     {
       label: "Relatórios Financeiros",
       icon: "pi pi-chart-line",
@@ -121,6 +139,11 @@ private userMenu: NavItem[] = [
         icon: "pi pi-link",
         route: "/company/payment-links",
   },
+  { label: "Credenciais API",
+    icon: "pi pi-key",
+    route: "/company/api-credentials"
+  },
+
 ];
 
 

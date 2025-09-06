@@ -1,24 +1,26 @@
 import {
-  Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone
+  Component, Input, ViewChild, ElementRef, AfterViewInit, OnDestroy, NgZone, OnInit
 } from '@angular/core';
-import { CommonModule }      from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { DialogModule, Dialog } from 'primeng/dialog';
-import { ButtonModule }      from 'primeng/button';
-import { FormsModule }       from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
+
+import { ImpersonationService, ImpersonationState } from '../../services/impersonation.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector   : 'app-user-menu',
   standalone : true,
   imports    : [
-    CommonModule, DialogModule, ButtonModule,
-    FormsModule, AvatarModule
+    CommonModule, DialogModule, ButtonModule, FormsModule, AvatarModule
   ],
   templateUrl: './user-menu.component.html',
   styleUrls  : ['./user-menu.component.scss']
 })
-export class UserMenuComponent implements AfterViewInit, OnDestroy {
+export class UserMenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input() username      = 'User';
   @Input() email         = 'user@email.com';
@@ -31,9 +33,22 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
   menuVisible = false;
   darkMode    = false;
 
-  private clickListener?: () => void;
+  impersonation: ImpersonationState | null = null;
 
-  constructor(private ngZone: NgZone, private router: Router) {}
+  private clickListener?: () => void;
+  private sub?: Subscription;
+
+  constructor(
+    private ngZone: NgZone,
+    private router: Router,
+    public impSrv: ImpersonationService
+  ) {}
+
+  ngOnInit() {
+    // acompanha mudanças do estado de impersonação
+    this.sub = this.impSrv.state$.subscribe(s => this.impersonation = s);
+    console.log('Impersonation active?', this.impSrv.isActive);
+  }
 
   ngAfterViewInit() {
     const savedTheme = localStorage.getItem('theme');
@@ -48,6 +63,7 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.removeClickListener();
+    this.sub?.unsubscribe();
   }
 
   reposition(): void {
@@ -55,7 +71,7 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
     const dlg  = this.menuDlg.container as HTMLElement;
     dlg.style.position = 'fixed';
     dlg.style.left     = `${rect.left - 50}px`;
-    dlg.style.top = `${rect.bottom + 6}px`;
+    dlg.style.top      = `${rect.bottom + 6}px`;
     dlg.style.borderRadius = '8px';
     dlg.style.visibility = 'visible';
     this.addClickListener();
@@ -111,16 +127,29 @@ export class UserMenuComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // Navega para o dashboard da company (visual)
   goToCompany() {
     this.router.navigate(['/company/dashboard']);
   }
+
+  // Volta ao admin e garante sair do modo "como empresa"
   goToAdmin() {
+    if (this.impSrv.isActive) this.impSrv.stop();
     this.router.navigate(['/admin/dashboard']);
   }
 
+  // Sair do sistema
   logout() {
     this.router.navigate(['/login']);
     this.menuVisible = false;
+    // opcional: também encerrar impersonação no logout
+    if (this.impSrv.isActive) this.impSrv.stop();
+  }
+
+  // Sair do modo "Admin como Empresa X"
+  exitImpersonation(event?: Event) {
+    if (event) event.stopPropagation();
+    this.impSrv.stop();
+    this.router.navigate(['/admin/all-companies']);
   }
 }
-

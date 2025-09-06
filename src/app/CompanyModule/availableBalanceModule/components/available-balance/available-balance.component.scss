@@ -1,7 +1,5 @@
 
 
-
-
 // Balance Overview Cards
 .balance-overview {
   display: grid;
@@ -66,6 +64,40 @@
 
             &.spinning {
               animation: spin 1s linear infinite;
+            }
+          }
+        }
+
+        .balance-actions {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
+
+          .withdraw-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: calc(var(--border-radius) / 2);
+            padding: 0.5rem 1rem;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            &:hover:not(:disabled) {
+              background: rgba(255, 255, 255, 0.3);
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+
+            i {
+              font-size: 1rem;
             }
           }
         }
@@ -388,5 +420,345 @@
     .balance-value {
       font-size: 1.25rem;
     }
+  }
+}
+
+// Withdrawal Modal Styles
+.withdrawal-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.withdrawal-modal {
+  background: #2a2d3a;
+  border-radius: var(--border-radius);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: white;
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #3a3d4a;
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #8b8d98;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+    }
+  }
+
+  .modal-content {
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #3a3d4a;
+
+    .btn-cancel {
+      background: none;
+      border: 1px solid #5a5d6a;
+      color: #8b8d98;
+      padding: 0.75rem 1.5rem;
+      border-radius: calc(var(--border-radius) / 2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+    }
+
+    .btn-submit {
+      background: #00d4aa;
+      border: none;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: calc(var(--border-radius) / 2);
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: #00c49a;
+      }
+
+      &:disabled {
+        background: #4a4d5a;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Available Balance Card in Modal
+.available-balance-card {
+  background: linear-gradient(135deg, #00d4aa 0%, #00a085 100%);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  .balance-info {
+    .balance-label {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .balance-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .balance-subtitle {
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+  }
+
+  .balance-icon {
+    opacity: 0.3;
+    font-size: 2rem;
+  }
+}
+
+// Withdrawal Form
+.withdrawal-form {
+  h4 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #e1e3e6;
+    }
+
+    .amount-input-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+
+      .amount-input {
+        flex: 1;
+        background: #3a3d4a;
+        border: 1px solid #4a4d5a;
+        border-radius: calc(var(--border-radius) / 2);
+        padding: 0.75rem;
+        color: white;
+        font-size: 1rem;
+
+        &:focus {
+          outline: none;
+          border-color: #00d4aa;
+        }
+      }
+
+      .max-btn {
+        background: #00d4aa;
+        border: none;
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: calc(var(--border-radius) / 2);
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: #00c49a;
+        }
+      }
+    }
+
+    .amount-info {
+      display: block;
+      margin-top: 0.5rem;
+      color: #8b8d98;
+      font-size: 0.875rem;
+    }
+
+    .observations-input {
+      width: 100%;
+      background: #3a3d4a;
+      border: 1px solid #4a4d5a;
+      border-radius: calc(var(--border-radius) / 2);
+      padding: 0.75rem;
+      color: white;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 80px;
+
+      &:focus {
+        outline: none;
+        border-color: #00d4aa;
+      }
+
+      &::placeholder {
+        color: #8b8d98;
+      }
+    }
+  }
+}
+
+// Payment Methods
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  .payment-method {
+    background: #3a3d4a;
+    border: 2px solid #4a4d5a;
+    border-radius: calc(var(--border-radius) / 2);
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    &:hover {
+      border-color: #5a5d6a;
+    }
+
+    &.selected {
+      border-color: #00d4aa;
+      background: rgba(0, 212, 170, 0.1);
+    }
+
+    .method-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: rgba(0, 212, 170, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00d4aa;
+      font-size: 1.25rem;
+    }
+
+    .method-info {
+      flex: 1;
+
+      .method-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .method-description {
+        color: #8b8d98;
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .method-min {
+        color: #8b8d98;
+        font-size: 0.875rem;
+      }
+    }
+
+    .method-selector {
+      .radio-button {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid #5a5d6a;
+        border-radius: 50%;
+        position: relative;
+        transition: all 0.2s ease;
+
+        &.checked {
+          border-color: #00d4aa;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #00d4aa;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design for Modal
+@media (max-width: 768px) {
+  .withdrawal-modal {
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+
+    .available-balance-card {
+      .balance-amount {
+        font-size: 1.75rem;
+      }
+    }
+
+    .payment-methods {
+      .payment-method {
+        padding: 0.75rem;
+
+        .method-icon {
+          width: 2rem;
+          height: 2rem;
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+
+  .withdrawal-modal-overlay {
+    padding: 0;
   }
 }

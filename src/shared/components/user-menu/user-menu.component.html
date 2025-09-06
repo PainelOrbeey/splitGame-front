@@ -1,27 +1,47 @@
 <div #trigger type="button" class="profile-trigger" pRipple (click)="toggleMenu()">
-  <p-avatar class="avatar" image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
-    shape="circle"></p-avatar>
+  <p-avatar class="avatar" image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png" shape="circle">
+  </p-avatar>
+  @if (impSrv.isActive) {
+  <div class="info" *ngIf="impersonation as imp">
+    <strong>Admin: {{ imp.companyName }}</strong>
+  </div>
+  }@else {
   <div class="info">
     <strong>{{ username }}</strong>
     <small>{{ email }}</small>
   </div>
+  }
+
+
+  <!-- Pílula visível no trigger quando estiver impersonando -->
+  <!-- <span *ngIf="impersonation as imp" class="impersonation-pill"
+    (click)="$event.stopPropagation(); exitImpersonation($event)">
+    Admin: {{ imp.companyName }} • Sair
+  </span> -->
+
   <i class="pi pi-chevron-down text-sm"></i>
 </div>
 
-
 <p-dialog #menu [(visible)]="menuVisible" [modal]="false" [draggable]="false" [resizable]="false"
-  [dismissableMask]="true" [blockScroll]="false" [style]="{ width:'280px', padding:'0'}" [styleClass]="'user-menu'"
-  (onShow)="reposition()" (onHide)="menuVisible = false" [baseZIndex]="1100" [closable]="false"
-  styleClass="!bg-transparent !border-0 user-menu">
+  [dismissableMask]="true" [blockScroll]="false" [style]="{ width:'280px', padding:'0'}"
+  [styleClass]="'!bg-transparent !border-0 user-menu'" (onShow)="reposition()" (onHide)="menuVisible = false"
+  [baseZIndex]="1100" [closable]="false">
+
   <section class="menu-body custom-bg">
     <h3>Olá, {{ username }} 👋</h3>
 
-    <p>Saldo: <strong class="text-green-600">
+    <!-- Chip de alerta quando estiver “como” empresa -->
+    <div *ngIf="impersonation as imp" class="impersonation-chip">
+      <span>Admin como <strong>{{ imp.companyName }}</strong></span>
+
+    </div>
+
+    <p>
+      Saldo:
+      <strong class="text-green-600">
         {{ saldo | currency:'BRL':'symbol':'1.2-2' }}
-      </strong></p>
-    <!-- <p>Saldo em Protesto: <strong class="text-green-600">
-        {{ saldoProtesto | currency:'BRL':'symbol':'1.2-2' }}
-      </strong></p> -->
+      </strong>
+    </p>
 
     <div class="theme-row">
       <span>Tema do site</span>
@@ -33,10 +53,15 @@
         </span>
       </label>
     </div>
-    <p (click)="goToCompany()" style="cursor: pointer;">ir para company </p>
 
-    <p (click)="goToAdmin()" style="cursor: pointer;">ir para adm</p>
-    <button pButton type="button" class="w-full p-button-danger p-button-outlined" (click)="logout()">
+    <!-- <p (click)="goToCompany()" style="cursor: pointer;">ir para company</p>
+    <p (click)="goToAdmin()" style="cursor: pointer;">ir para adm</p> -->
+    <button pButton type="button" class="w-full p-button-danger p-button-outlined"
+      (click)="$event.stopPropagation(); exitImpersonation($event)" *ngIf="impersonation as imp">
+      <i class=" pi pi-sign-out me-2"></i> Sair de {{ imp.companyName }}
+    </button>
+    <button pButton type="button" class="w-full p-button-danger p-button-outlined" (click)="logout()"
+      *ngIf="!impersonation as imp">
       <i class="pi pi-sign-out me-2"></i> Sair
     </button>
   </section>
