@@ -193,7 +193,7 @@
       padding: 1.25rem;
 
       &.sales-card {
-        grid-row: 1 / 4;
+        grid-row: 1 / 5;
         padding: 1.5rem;
       }
 
@@ -582,12 +582,15 @@
   }
 
   .metrics-grid {
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: auto auto auto !important;
+    // display: flex;
+    // flex-direction: column;
+    // flex-wrap: wrap;
+    // grid-template-columns: 1fr 1fr !important;
+    // grid-template-rows: auto auto auto !important;
 
-    .sales-card {
-      grid-row: 1 / 2 !important;
-    }
+    // .sales-card {
+    //   grid-row: 1 / 2 !important;
+    // }
   }
 
   .charts-section {
