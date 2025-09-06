@@ -4,6 +4,18 @@
     <app-user-menu [username]="'Admin Sistema'" [email]="'admin@splitgame.com'" [saldo]="0" [saldoProtesto]="0">
     </app-user-menu>
   </header>
+
+  <app-filter-tabs [tabs]="[
+      { label: 'Todos',      value: '' },
+      { label: 'Pendentes',  value: 'pending' },
+      { label: 'Em Análise', value: 'under_review' },
+      { label: 'Aprovados',  value: 'approved' },
+      { label: 'Rejeitados', value: 'rejected' }
+    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
+    (searchChange)="filters.search = $event" searchPlaceholder="Buscar empresa ou CNPJ…" (export)="exportCSV()"
+    (filterClick)="sidebarVisible = true">
+  </app-filter-tabs>
+
   <div class="metrics-grid">
     <app-summary-card class="width-max" title="Total de Solicitações" [value]="fmt(metrics.totalRequests, 'int')"
       icon="pi pi-file-check">
@@ -22,18 +34,6 @@
       [value]="metrics.averageProcessingTime + ' dias'" icon="pi pi-stopwatch">
     </app-summary-card>
   </div>
-  <app-filter-tabs [tabs]="[
-      { label: 'Todos',      value: '' },
-      { label: 'Pendentes',  value: 'pending' },
-      { label: 'Em Análise', value: 'under_review' },
-      { label: 'Aprovados',  value: 'approved' },
-      { label: 'Rejeitados', value: 'rejected' }
-    ]" [selected]="filters.status" (selectedChange)="setStatus($event)" [search]="filters.search"
-    (searchChange)="filters.search = $event" searchPlaceholder="Buscar empresa ou CNPJ…" (export)="exportCSV()"
-    (filterClick)="sidebarVisible = true">
-  </app-filter-tabs>
-
-
 
   <div class="requests-table-card">
     <div class="table-header">
@@ -76,6 +76,9 @@
                 <button class="btn-view" (click)="viewRequest(request)" title="Ver detalhes">
                   <i class="pi pi-eye"></i>
                 </button>
+                <button class="btn-documents" (click)="viewDocuments(request)" title="Ver documentos">
+                  <i class="pi pi-file"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -84,7 +87,7 @@
     </div>
   </div>
 
-  <app-sidebar-filters [(visible)]="sidebarVisible" width="340px">
+  <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
     <h3 header>Filtros KYC</h3>
 
     <section class="drawer-content no-scrollbar">
@@ -219,6 +222,92 @@
         <h4>Observações</h4>
         <p>{{ selectedRequest.notes }}</p>
       </div>
+
+      <div class="detail-section" *ngIf="selectedRequest?.documents && selectedRequest.documents.length > 0">
+        <h4>Documentos Enviados ({{ selectedRequest.documents.length }})</h4>
+        <div class="documents-grid">
+          <div class="document-card" *ngFor="let doc of selectedRequest.documents">
+            <div class="document-header">
+              <div class="document-info">
+                <i class="pi pi-file-pdf document-icon"></i>
+                <div>
+                  <strong>{{ doc.name }}</strong>
+                  <span class="document-type">{{ doc.type }}</span>
+                </div>
+              </div>
+              <span [class]="'status-badge ' + getDocumentStatusClass(doc.status)">
+                {{ getDocumentStatusLabel(doc.status) }}
+              </span>
+            </div>
+            <div class="document-actions">
+              <button class="btn-download" (click)="downloadDocument(doc)" title="Baixar">
+                <i class="pi pi-download"></i>
+              </button>
+              <button class="btn-approve" (click)="approveDocument(doc)" title="Aprovar"
+                *ngIf="doc.status !== 'approved'">
+                <i class="pi pi-check"></i>
+              </button>
+              <button class="btn-reject" (click)="rejectDocument(doc)" title="Rejeitar"
+                *ngIf="doc.status !== 'rejected'">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </app-custom-dialog>
+
+  <app-custom-dialog [(visible)]="documentsDialogVisible" title="Documentos da Solicitação"
+    [actions]="[{id:'close', label:'Fechar', type:'text'}]" (action)="documentsDialogVisible = false" width="900px"
+    maxHeight="90vh">
+
+    <div class="documents-viewer">
+      <div class="documents-header">
+        <h4>Documentos Enviados ({{ selectedDocuments.length }})</h4>
+        <div class="documents-stats">
+          <span class="stat approved">
+            <i class="pi pi-check-circle"></i>
+            {{ countByStatus('approved') }} Aprovados
+          </span>
+          <span class="stat pending">
+            <i class="pi pi-clock"></i>
+            {{ countByStatus('pending') }} Pendentes
+          </span>
+          <span class="stat rejected">
+            <i class="pi pi-times-circle"></i>
+            {{ countByStatus('rejected') }} Rejeitados
+          </span>
+        </div>
+      </div> <!-- fecha documents-header corretamente -->
+
+      <div class="documents-list">
+        <div class="document-item" *ngFor="let doc of selectedDocuments; trackBy: trackDoc">
+          <div class="document-preview">
+            <div class="document-thumbnail"><i class="pi pi-file-pdf"></i></div>
+            <div class="document-details">
+              <h5>{{ doc.name }}</h5>
+              <p>{{ doc.type }} • Enviado em {{ formatDate(doc.uploadDate) }}</p>
+              <span [class]="'status-badge ' + getDocumentStatusClass(doc.status)">
+                {{ getDocumentStatusLabel(doc.status) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="document-controls">
+            <button class="btn-primary" (click)="downloadDocument(doc)">
+              <i class="pi pi-download"></i> Baixar
+            </button>
+            <button class="btn-success" (click)="approveDocument(doc)" *ngIf="doc.status !== 'approved'">
+              <i class="pi pi-check"></i> Aprovar
+            </button>
+            <button class="btn-danger" (click)="rejectDocument(doc)" *ngIf="doc.status !== 'rejected'">
+              <i class="pi pi-times"></i> Rejeitar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-custom-dialog>
+
 </section>

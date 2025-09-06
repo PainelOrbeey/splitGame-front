@@ -54,6 +54,8 @@ export class WebhooksComponent implements OnInit {
   testing = false
 
   ngOnInit() {
+    this.filters.status = ""
+    this.filters.type = ""
     this.loadWebhookTypes()
     this.loadWebhooks()
   }

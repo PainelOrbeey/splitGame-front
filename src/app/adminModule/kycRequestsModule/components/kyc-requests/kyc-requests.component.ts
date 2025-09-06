@@ -1,17 +1,17 @@
 import { Component, type OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
-import type { KycRequest, KycMetrics } from "../../interfaces/kyc-requests.interface"
-import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component"
-import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component"
-import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component"
-import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component"
-import { CustomDialogComponent } from "../../../../../shared/components/custom-dialog/custom-dialog.component"
+import type { KycRequest, KycDocument, KycMetrics } from "../../interfaces/kyc-requests.interface"
+import { CustomDialogComponent } from "../../../../../shared/components/custom-dialog/custom-dialog.component";
+import { SummaryCardComponent } from "../../../../../shared/components/sumary-cards/sumary-cards.component";
+import { FilterTabsComponent } from "../../../../../shared/components/filter-tabs/filter-tabs.component";
+import { UserMenuComponent } from "../../../../../shared/components/user-menu/user-menu.component";
+import { SidebarFiltersComponent } from "../../../../../shared/components/sidebar-filters/sidebar-filters.component";
 
 @Component({
   selector: "app-kyc-requests",
   standalone: true,
-  imports: [CommonModule, FormsModule,UserMenuComponent,FilterTabsComponent,SummaryCardComponent,SidebarFiltersComponent,CustomDialogComponent],
+  imports: [CommonModule, FormsModule, CustomDialogComponent, SummaryCardComponent, FilterTabsComponent, UserMenuComponent, SidebarFiltersComponent],
   templateUrl: "./kyc-requests.component.html",
   styleUrls: ["./kyc-requests.component.scss"],
 })
@@ -25,7 +25,32 @@ export class KycRequestsComponent implements OnInit {
       status: "pending",
       priority: "high",
       assignedTo: "João Silva",
-      documents: [],
+      documents: [
+        {
+          id: "doc1",
+          name: "Contrato Social",
+          type: "PDF",
+          url: "/documents/contrato-social.pdf",
+          uploadDate: new Date("2024-01-15"),
+          status: "approved",
+        },
+        {
+          id: "doc2",
+          name: "Cartão CNPJ",
+          type: "PDF",
+          url: "/documents/cartao-cnpj.pdf",
+          uploadDate: new Date("2024-01-15"),
+          status: "pending",
+        },
+        {
+          id: "doc3",
+          name: "Comprovante de Endereço",
+          type: "PDF",
+          url: "/documents/comprovante-endereco.pdf",
+          uploadDate: new Date("2024-01-15"),
+          status: "rejected",
+        },
+      ],
       lastUpdate: new Date(),
       notes: "Documentação completa enviada",
     },
@@ -37,7 +62,32 @@ export class KycRequestsComponent implements OnInit {
       status: "under_review",
       priority: "medium",
       assignedTo: "Maria Santos",
-      documents: [],
+      documents: [
+        {
+          id: "doc4",
+          name: "Contrato Social",
+          type: "PDF",
+          url: "/documents/contrato-social.pdf",
+          uploadDate: new Date("2024-01-14"),
+          status: "pending",
+        },
+        {
+          id: "doc5",
+          name: "Cartão CNPJ",
+          type: "PDF",
+          url: "/documents/cartao-cnpj.pdf",
+          uploadDate: new Date("2024-01-14"),
+          status: "approved",
+        },
+        {
+          id: "doc6",
+          name: "Comprovante de Endereço",
+          type: "PDF",
+          url: "/documents/comprovante-endereco.pdf",
+          uploadDate: new Date("2024-01-14"),
+          status: "rejected",
+        },
+      ],
       lastUpdate: new Date(),
       notes: "Aguardando documentos adicionais",
     },
@@ -49,7 +99,32 @@ export class KycRequestsComponent implements OnInit {
       status: "approved",
       priority: "low",
       assignedTo: "Carlos Lima",
-      documents: [],
+      documents: [
+        {
+          id: "doc7",
+          name: "Contrato Social",
+          type: "PDF",
+          url: "/documents/contrato-social.pdf",
+          uploadDate: new Date("2024-01-13"),
+          status: "approved",
+        },
+        {
+          id: "doc8",
+          name: "Cartão CNPJ",
+          type: "PDF",
+          url: "/documents/cartao-cnpj.pdf",
+          uploadDate: new Date("2024-01-13"),
+          status: "pending",
+        },
+        {
+          id: "doc9",
+          name: "Comprovante de Endereço",
+          type: "PDF",
+          url: "/documents/comprovante-endereco.pdf",
+          uploadDate: new Date("2024-01-13"),
+          status: "rejected",
+        },
+      ],
       lastUpdate: new Date(),
       notes: "Aprovado com sucesso",
     },
@@ -61,7 +136,32 @@ export class KycRequestsComponent implements OnInit {
       status: "rejected",
       priority: "medium",
       assignedTo: "Ana Costa",
-      documents: [],
+      documents: [
+        {
+          id: "doc10",
+          name: "Contrato Social",
+          type: "PDF",
+          url: "/documents/contrato-social.pdf",
+          uploadDate: new Date("2024-01-12"),
+          status: "approved",
+        },
+        {
+          id: "doc11",
+          name: "Cartão CNPJ",
+          type: "PDF",
+          url: "/documents/cartao-cnpj.pdf",
+          uploadDate: new Date("2024-01-12"),
+          status: "pending",
+        },
+        {
+          id: "doc12",
+          name: "Comprovante de Endereço",
+          type: "PDF",
+          url: "/documents/comprovante-endereco.pdf",
+          uploadDate: new Date("2024-01-12"),
+          status: "rejected",
+        },
+      ],
       lastUpdate: new Date(),
       notes: "Documentação incompleta",
     },
@@ -73,7 +173,32 @@ export class KycRequestsComponent implements OnInit {
       status: "pending",
       priority: "urgent",
       assignedTo: "Pedro Oliveira",
-      documents: [],
+      documents: [
+        {
+          id: "doc13",
+          name: "Contrato Social",
+          type: "PDF",
+          url: "/documents/contrato-social.pdf",
+          uploadDate: new Date("2024-01-11"),
+          status: "approved",
+        },
+        {
+          id: "doc14",
+          name: "Cartão CNPJ",
+          type: "PDF",
+          url: "/documents/cartao-cnpj.pdf",
+          uploadDate: new Date("2024-01-11"),
+          status: "pending",
+        },
+        {
+          id: "doc15",
+          name: "Comprovante de Endereço",
+          type: "PDF",
+          url: "/documents/comprovante-endereco.pdf",
+          uploadDate: new Date("2024-01-11"),
+          status: "rejected",
+        },
+      ],
       lastUpdate: new Date(),
       notes: "Solicitação urgente",
     },
@@ -81,6 +206,8 @@ export class KycRequestsComponent implements OnInit {
 
   filteredRequests: KycRequest[] = []
   sidebarVisible = false
+  documentsDialogVisible = false
+  selectedDocuments: KycDocument[] = []
 
   filters = {
     search: "",
@@ -334,5 +461,58 @@ export class KycRequestsComponent implements OnInit {
     const start = (this.currentPage - 1) * this.itemsPerPage
     const end = start + this.itemsPerPage
     return this.filteredRequests.slice(start, end)
+  }
+
+  viewDocuments(request: KycRequest): void {
+    this.selectedDocuments = request.documents
+    this.documentsDialogVisible = true
+  }
+countByStatus(status: 'approved' | 'pending' | 'rejected'): number {
+  return this.selectedDocuments.reduce((acc, d) => acc + (d.status === status ? 1 : 0), 0);
+  }
+  trackDoc = (_: number, doc: KycDocument) => doc.id;
+
+downloadDocument(doc: KycDocument): void {
+  const link = document.createElement('a'); // agora usa o global correto
+  link.href = doc.url;
+  link.download = doc.name;
+  link.click();
+  link.remove();
+}
+
+  approveDocument(document: KycDocument): void {
+    document.status = "approved"
+    console.log(`Documento aprovado: ${document.name}`)
+  }
+
+  rejectDocument(document: KycDocument): void {
+    document.status = "rejected"
+    console.log(`Documento rejeitado: ${document.name}`)
+  }
+
+  getDocumentStatusClass(status: string): string {
+    switch (status) {
+      case "approved":
+        return "status-success"
+      case "rejected":
+        return "status-error"
+      case "pending":
+        return "status-warning"
+      default:
+        return ""
+    }
+  }
+
+  getDocumentStatusLabel(status: string): string {
+    switch (status) {
+      case "approved":
+        return "Aprovado"
+      case "rejected":
+        return "Rejeitado"
+      case "pending":
+        return "Pendente"
+      default:
+        return status
+    }
   }
 }
