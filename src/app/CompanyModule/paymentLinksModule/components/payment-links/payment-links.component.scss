@@ -24,7 +24,6 @@
 
 /* ===== Layout principal ===== */
 .container-wrapper{
-
   /* Header */
   .header{
     display:flex;
@@ -258,7 +257,7 @@
 
   /* Paginação */
   .pagination{
-    display:flex; justify-content:center; align-items:center; gap:1rem; margin-top:2rem;
+    display:flex; justify-content:right; align-items:center; gap:1rem; margin-top:2rem;
 
     .btn-pagination{
       padding:.5rem 1rem;

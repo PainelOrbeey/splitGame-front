@@ -171,8 +171,7 @@
     </div>
 
   </div>
-  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
-  </orb-pagination>
+
   <!-- Anticipations Section -->
   <div class="table-card">
     <div class="table-header">
@@ -220,7 +219,8 @@
       </table>
     </div>
   </div>
-
+  <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+  </orb-pagination>
   <!-- Sidebar Filters -->
   <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
     <h3 header>Filtros de Banco Recebedor</h3>

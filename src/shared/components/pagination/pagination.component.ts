@@ -5,6 +5,7 @@ import {
   Input,
   Output,
   OnChanges,
+  HostListener,
 } from '@angular/core';
 
 @Component({
@@ -16,15 +17,42 @@ import {
 })
 export class PaginationComponent implements OnChanges {
   @Input() currentPage = 1;
-
   @Input() totalPages = 1;
-
   @Output() pageChange = new EventEmitter<number>();
 
+  maxVisible = 5; // padrão (desktop)
   pages: number[] = [];
 
   ngOnChanges(): void {
-    this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    this.updatePages();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.updateMaxVisible();
+    this.updatePages();
+  }
+
+  ngOnInit(): void {
+    this.updateMaxVisible();
+    this.updatePages();
+  }
+
+  private updateMaxVisible(): void {
+    if (window.innerWidth <= 950) {
+      this.maxVisible = 2;
+    } else {
+      this.maxVisible = 5;
+    }
+  }
+
+  private updatePages(): void {
+    const half = Math.floor(this.maxVisible / 2);
+    let start = Math.max(1, this.currentPage - half);
+    let end = Math.min(this.totalPages, start + this.maxVisible - 1);
+
+    start = Math.max(1, end - this.maxVisible + 1);
+    this.pages = Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   prev(): void {
@@ -48,5 +76,6 @@ export class PaginationComponent implements OnChanges {
   private changePage(page: number): void {
     this.currentPage = page;
     this.pageChange.emit(this.currentPage);
+    this.updatePages();
   }
 }
