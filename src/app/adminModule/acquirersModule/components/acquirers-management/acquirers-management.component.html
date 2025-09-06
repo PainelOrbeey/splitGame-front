@@ -70,7 +70,7 @@
 
       <div class="card-footer">
         <div class="payment-methods">
-          <div class="method-toggle" *ngIf="acquirer.paymentMethods.pix">
+          <div class="method-toggle">
             <label class="toggle-switch">
               <input type="checkbox" [checked]="acquirer.paymentMethods.pix"
                 (change)="togglePaymentMethod(acquirer, 'pix')">
@@ -79,7 +79,7 @@
             <span class="method-label">PIX</span>
           </div>
 
-          <div class="method-toggle" *ngIf="acquirer.paymentMethods.creditCard">
+          <div class="method-toggle">
             <label class="toggle-switch">
               <input type="checkbox" [checked]="acquirer.paymentMethods.creditCard"
                 (change)="togglePaymentMethod(acquirer, 'creditCard')">
@@ -88,7 +88,7 @@
             <span class="method-label">Cartão</span>
           </div>
 
-          <div class="method-toggle" *ngIf="acquirer.paymentMethods.boleto">
+          <div class="method-toggle">
             <label class="toggle-switch">
               <input type="checkbox" [checked]="acquirer.paymentMethods.boleto"
                 (change)="togglePaymentMethod(acquirer, 'boleto')">

@@ -63,11 +63,11 @@ export class AdminSidebarComponent implements OnInit, OnDestroy {
       icon: "pi pi-forward",
       route: "/admin/all-advances",
     },
-    {
-      label: "Integrações",
-      icon: "pi pi-microchip",
-      route: "/admin/integrations",
-    },
+    // {
+    //   label: "Integrações",
+    //   icon: "pi pi-microchip",
+    //   route: "/admin/integrations",
+    // },
       { label: "Cobrança",
     icon: "pi pi-print",
     route: "/company/charge"

@@ -69,7 +69,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "1",
       name: "Pagora Fy (2)",
-      logo: "/placeholder.svg?height=60&width=120&text=Pagora",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.us-east-1.amazonaws.com%2FAdquirentes%2Fpagora-fy.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "all",
       status: "active",
       integration: "api",
@@ -197,7 +197,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "3",
       name: "PAGNET",
-      logo: "/placeholder.svg?height=60&width=120&text=PAGNET",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.us-east-1.amazonaws.com%2FAdquirentes%2Fpagnet.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "all",
       status: "active",
       integration: "api",
@@ -261,7 +261,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "4",
       name: "Pagora Fy",
-      logo: "/placeholder.svg?height=60&width=120&text=Pagora",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.us-east-1.amazonaws.com%2FAdquirentes%2Fpagora-fy.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "all",
       status: "active",
       integration: "api",
@@ -325,7 +325,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "5",
       name: "ReflowPay (11/08)",
-      logo: "/placeholder.svg?height=60&width=120&text=Reflow",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.amazonaws.com%2FAdquirentes%2Freflowpay.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "all",
       status: "active",
       integration: "sdk",
@@ -389,7 +389,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "6",
       name: "Rapdyn",
-      logo: "/placeholder.svg?height=60&width=120&text=Rapdyn",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.amazonaws.com%2FAdquirentes%2Frapdyn.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "pix",
       status: "active",
       integration: "api",
@@ -448,7 +448,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "7",
       name: "MediusPag (30/07)",
-      logo: "/placeholder.svg?height=60&width=120&text=Medius",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.amazonaws.com%2FAdquirentes%2Fmediuspag.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "pix",
       status: "active",
       integration: "api",
@@ -507,7 +507,7 @@ export class AcquirersManagementComponent implements OnInit {
     {
       id: "8",
       name: "PixelPag",
-      logo: "/placeholder.svg?height=60&width=120&text=Pixel",
+      logo: "https://app.appsplitgames.com/_next/image?url=https%3A%2F%2Ffastsoft-gateway.s3.amazonaws.com%2FAdquirentes%2Fpixelpag.png&w=256&q=75&dpl=dpl_HaH16o12MQtqh4NpG2wsWFxv4dhV",
       type: "all",
       status: "active",
       integration: "api",
