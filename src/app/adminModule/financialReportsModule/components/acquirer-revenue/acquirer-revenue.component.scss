@@ -115,16 +115,15 @@
       }
 
       .btn-action {
-        background: none;
-        border: none;
-        color: var(--blue-500);
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
         cursor: pointer;
         padding: 0.5rem;
         border-radius: 4px;
         transition: background-color 0.2s ease;
 
         &:hover {
-          background: var(--bg-main);
+          background: var(--blue-500);
         }
 
         i {

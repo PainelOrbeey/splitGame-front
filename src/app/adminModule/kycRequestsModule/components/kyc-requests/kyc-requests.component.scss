@@ -134,13 +134,13 @@
             .btn-view {
               width: 32px;
               height: 32px;
-              border: none;
+              border: 1px solid var(--border-color);
               border-radius: 6px;
               cursor: pointer;
               display: flex;
               align-items: center;
               justify-content: center;
-              background: var(--bg-main);
+              background: var(--card-bg);
               color: var(--text-muted);
               transition: all 0.2s ease;
 

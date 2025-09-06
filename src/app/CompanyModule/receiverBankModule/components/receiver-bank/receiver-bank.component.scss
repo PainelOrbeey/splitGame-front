@@ -523,7 +523,11 @@
 }
 
 // Responsive Design
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
+  .accounts-grid {
+    display: flex !important;
+    flex-direction: column;
+  }
   .container-wrapper {
     padding: 1rem;
   }

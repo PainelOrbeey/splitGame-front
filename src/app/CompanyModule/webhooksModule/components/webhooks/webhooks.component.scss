@@ -83,7 +83,7 @@
 
         select {
           padding: 0.75rem;
-          border: 1px solid var(--border-color);
+          border: 1px solid var(--blue-500);
           border-radius: 8px;
           font-size: 0.9rem;
           background: var(--card-bg);
@@ -270,7 +270,7 @@
   }
 
   .pagination {
-    display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;
+    display: flex; justify-content: right; align-items: center; gap: 1rem; margin-top: 2rem;
 
     .btn-pagination {
       padding: .5rem 1rem;

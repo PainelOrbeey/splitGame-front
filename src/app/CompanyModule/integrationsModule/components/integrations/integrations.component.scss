@@ -374,6 +374,13 @@
 
 /* ================= RESPONSIVO ================= */
 @media (max-width:768px){
+  .container-wrapper {
+    padding: 1rem;
+  }
+  .card-header {
+    flex-wrap: wrap;
+  }
+
   .integrations-grid{ grid-template-columns:1fr; }
 
   .filters-section{
@@ -383,6 +390,7 @@
 
     .filter-selects{
       justify-content:stretch;
+      flex-wrap: wrap;
 
       .filter-select{ flex:1; min-width:auto; }
     }

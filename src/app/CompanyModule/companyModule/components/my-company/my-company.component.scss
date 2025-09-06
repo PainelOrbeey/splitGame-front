@@ -699,3 +699,20 @@
   .settings-grid { grid-template-columns: 1fr; }
   .team-grid, .documents-grid, .billing-overview { grid-template-columns: 1fr; }
 }
+@media (max-width:1000px){
+  .info-grid {
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+  }
+  .metrics-cards {
+    display: flex !important;
+    flex-direction: column;
+  }
+  .team-card {
+    flex-wrap: wrap;
+  }
+  .document-card {
+    flex-wrap: wrap;
+  }
+}
