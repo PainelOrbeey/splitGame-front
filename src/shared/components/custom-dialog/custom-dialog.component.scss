@@ -52,7 +52,7 @@
       transition: all var(--transition);
 
       &:hover {
-        background: var(--gray-050);
+        background: var(--border-color);
         color: var(--text-main);
       }
     }
@@ -62,20 +62,20 @@
     padding: 1.5rem;
     overflow-y: auto;
     flex: 1 1 auto;
-    
+
     &::-webkit-scrollbar {
       width: 8px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: var(--border-color);
       border-radius: 4px;
     }
-    
+
     &::-webkit-scrollbar-thumb:hover {
       background: var(--text-muted);
     }
@@ -116,7 +116,7 @@
       border: 1px solid var(--border-color);
 
       &:hover {
-        background: var(--gray-050);
+        background: var(--border-color);
       }
     }
   }
@@ -147,10 +147,10 @@
     width: 95vw !important;
     max-height: 85vh !important;
   }
-  
+
   footer {
     flex-direction: column-reverse;
-    
+
     button {
       width: 100%;
     }

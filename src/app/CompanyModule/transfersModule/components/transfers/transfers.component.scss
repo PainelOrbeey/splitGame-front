@@ -187,11 +187,15 @@
     transition: all 0.2s ease;
 
     &.view-btn {
-      background: var(--blue-500);
-      color: white;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+
+
 
       &:hover {
-        background: var(--blue-900);
+        background: var(--blue-500);
+        color: white;
       }
     }
   }

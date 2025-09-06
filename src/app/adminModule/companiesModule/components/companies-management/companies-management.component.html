@@ -104,9 +104,10 @@
       </table>
     </div>
 
-    <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
-    </orb-pagination>
+
   </div>
+   <orb-pagination [currentPage]="currentPage" [totalPages]="totalItems" (pageChange)="onPageChange($event)">
+    </orb-pagination>
 
   <app-sidebar-filters [(visible)]="sidebarVisible" width="360px">
     <h3 header>Filtros de Empresas</h3>
